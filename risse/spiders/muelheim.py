@@ -41,11 +41,9 @@ class MuelheimSpider(RisseSpider):
             request.meta['path'] = os.path.join(response.meta['path'], filename)
             logging.info('Saving PDF %s', request.meta['path'])
 
-            yield request       
+            yield request 
 
-    def parse_beschluss(self, response):
-        self.create_directories(response.meta['path'])
-
+    def parse_beratungsverlauf(self, response):  
         try:
             beratungsverlauf = response.xpath('//span[text()="Beratungsverlauf:"]/parent::node()/parent::node()').get()
         except:
@@ -53,7 +51,12 @@ class MuelheimSpider(RisseSpider):
 
         beratungsverlauf_path = os.path.join(response.meta['path'], "beratungsverlauf.html")
 
-        self.save_file(beratungsverlauf_path, beratungsverlauf, True)
+        self.save_file(beratungsverlauf_path, beratungsverlauf, True)    
+
+    def parse_beschluss(self, response):
+        self.create_directories(response.meta['path'])
+
+        self.parse_beratungsverlauf(response)
 
         # mostly öffentliche Niederschrift
         anlagen = response.xpath('//a[contains(@href, ".pdf")]')
