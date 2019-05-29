@@ -96,6 +96,14 @@ class MuelheimSpider(RisseSpider):
 
             yield request
 
+        # so i think i could use the yielding here and in the other function
+        #   if i run this with a scrapy request + yield!
+        for request in self.build_topic_requests(response, path):
+            yield request
+
+    # can probably be shortened with better selectors
+    def build_topic_requests(self, response, path):
+        requests = []
         trs = response.xpath('//tr[contains(@class, "zl11") or contains(@class, "zl12")]')
         urls = response.xpath('//a[contains(@href, "to020.asp")]/@href').getall() 
 
@@ -114,13 +122,13 @@ class MuelheimSpider(RisseSpider):
 
             try:
                 top = response.xpath('//a[contains(@href, "' + urls[i] + '")]/parent::*/parent::*/td[contains(@class, "text4")]/a/text()').get().strip('Ö\xa0') .lstrip('0')
-            
             except: 
                 top = response.xpath('//a[contains(@href, "' + urls[i] + '")]/parent::*/parent::*/td[contains(@class, "text4")]/span/a/text()').get().strip('Ö\xa0') .lstrip('0')
 
             request.meta['path'] = os.path.join(*path[:-1], top or "kein_TOP", topics[i])
+            requests.append(request)
 
-            yield request
+        return requests
                  
     def parse_year(self, response):
         ''' Herein, a specific year or the month of a specific year is parsed. 
