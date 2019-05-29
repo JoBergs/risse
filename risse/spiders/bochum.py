@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# scrapy crawl bochum -a stadt=Bochum -a url=https://session.bochum.de/bi/infobi.asp -a root=test -a year=2018 -a month=3 -a overwrite=True
-
 import os, logging
 
 import scrapy

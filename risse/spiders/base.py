@@ -7,16 +7,22 @@ import scrapy
 from scrapy.utils.log import configure_logging
 
 
-class RisseSpider(scrapy.Spider):
+class RisseSpider(scrapy.Spider):   
+    ''' Abstract base class for scraping Ratsinformationssysteme. '''
 
     def __init__(self, root="documents", stadt=None, url=None, year=None,
                      month=None, overwrite="False", *a, **kw):
+        ''' Initialization:
+        root:: directory path were the results are stored,
+        stadt:: city that is to be crawled,
+        url:: url of the target Ratsinformationssystem,
+        year, month:: year and month to be scraped,
+        overwrite:: flag determines if existing results are overwritten'''
+
         super(RisseSpider, self).__init__(*a, **kw)
 
-        self.root, self.year, self.month = root, year, month
-        self.overwrite = True if overwrite == "True" else False
-        self.stadt = stadt
-        self.start_urls = [url]
+        self.root, self.year, self.month, self.stadt = root, year, month, stadt
+        self.overwrite, self.start_urls = bool(overwrite), [url]
 
         configure_logging({"LOG_FILE": self.stadt + '.log'})
 
