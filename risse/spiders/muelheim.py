@@ -31,6 +31,7 @@ class MuelheimSpider(RisseSpider):
             yield request      
 
         # ACHTUNG: Anlagen können nicht verfügbar sein
+        # this can be fused with the other parsing of anlagen
         anlagen = response.xpath('//a[contains(@href, ".pdf")]')
         anlagen = anlagen[:len(anlagen)//2]
 
@@ -50,7 +51,6 @@ class MuelheimSpider(RisseSpider):
             beratungsverlauf = "Enthält nicht transferierbare Sonderzeichen."
 
         beratungsverlauf_path = os.path.join(response.meta['path'], "beratungsverlauf.html")
-
         self.save_file(beratungsverlauf_path, beratungsverlauf, True)    
 
     def parse_beschluss(self, response):
