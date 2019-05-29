@@ -6,7 +6,6 @@ from lxml import html
 
 class BochumSpider(RisseSpider):
     name = "bochum"
-    # download_delay = 1.5  # prolly not necessary
 
     def extract_top(self, index, trs):
         while index > 0:
@@ -40,9 +39,6 @@ class BochumSpider(RisseSpider):
             topic_xpath = '//a[contains(@href, "' + pdfs[i] + '")]/ancestor::*/*/a[contains(@class, "smc_doc smc_field_voname smc_datatype_vo")]/text()'
             topic = response.xpath(topic_xpath).get()
 
-            # top_xpath = '//a[contains(@href, "' + pdfs[i] + '")]/parent::td/parent::tr/parent::*/parent::*/parent::*/parent::*/td[contains(@class, "smc_tophn")]/text()'
-            # top = response.xpath(top_xpath).get()
-
             trs = response.xpath('//tr[contains(@class, "smc_toph")]')
 
             for j in range(len(trs)):
@@ -53,10 +49,6 @@ class BochumSpider(RisseSpider):
             topic = self.extract_topic(j, trs)
 
             full_path = response.meta['path'] + [top, topic]
-
-            # if topic == None or top == None:
-            #     import ipdb
-            #     ipdb.set_trace()
 
             self.create_directories(os.path.join(*full_path))
 

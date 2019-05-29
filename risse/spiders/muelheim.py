@@ -15,8 +15,7 @@ all_years = range(1998, current_year + 1)
 #   and overwrite it for muelheim
 class MuelheimSpider(RisseSpider):
     name = "muelheim"
-    # download_delay = 1.5  # prolly not necessary
-
+ 
     def parse_vorlage(self, response):    
         dolfdnrs = response.xpath('//input[contains(@name, "DOLFDNR")]')
         titles = response.xpath('//input[contains(@class, "il2_p")]')
@@ -42,25 +41,19 @@ class MuelheimSpider(RisseSpider):
             request.meta['path'] = os.path.join(response.meta['path'], filename)
             logging.info('Saving PDF %s', request.meta['path'])
 
-            yield request 
+            yield request       
 
     def parse_beschluss(self, response):
-        # print("beschluss path ", response.meta['path'])
-        # if "2019" in response.meta['path']:
-        #     import ipdb
-        #     ipdb.set_trace()
         self.create_directories(response.meta['path'])
 
         try:
-            beschluss = response.xpath('//span[text()="Beratungsverlauf:"]/parent::node()/parent::node()').get()
+            beratungsverlauf = response.xpath('//span[text()="Beratungsverlauf:"]/parent::node()/parent::node()').get()
         except:
-            beschluss = "Enthält nicht transferierbare Sonderzeichen."
+            beratungsverlauf = "Enthält nicht transferierbare Sonderzeichen."
 
-        # FUSE THIS WITH HTML WRITING IN dortmund.py; add automated overwrite test here and for pdf
-        beschluss_path = os.path.join(response.meta['path'], "beratungsverlauf.html")
-        logging.info('Saving HTML %s', beschluss_path)
-        with open(beschluss_path, 'w') as f:
-            f.write(beschluss)  # if there is no beschluss (BAD)
+        beratungsverlauf_path = os.path.join(response.meta['path'], "beratungsverlauf.html")
+
+        self.save_file(beratungsverlauf_path, beratungsverlauf, True)
 
         # mostly öffentliche Niederschrift
         anlagen = response.xpath('//a[contains(@href, ".pdf")]')
@@ -87,10 +80,6 @@ class MuelheimSpider(RisseSpider):
 
     def parse_sitzung(self, response):
         name = response.xpath('//a[contains(@href, "Gremium")]/text()').extract()[-1]
-        # print(name)
-        # if name == "Planungsausschuss":
-        #     import ipdb
-        #     ipdb.set_trace()
 
         # not every sitzung has a öffentliche Niederschrift?
         dolfdnr = None
@@ -106,10 +95,6 @@ class MuelheimSpider(RisseSpider):
         # move joining in base class, pass root (not really necessary), name and date
         path = [self.root, date[-1], name, '-'.join(date[::-1]), '__Dokumente']
         self.create_directories(os.path.join(*path))
-        # print("created ", os.path.join(*path))
-        # if "2019" in os.path.join(*path):
-        #     import ipdb
-        #     ipdb.set_trace()
 
         # not all Sitzungen have an oeffentliche Niederschrift
         if dolfdnr:
@@ -150,7 +135,6 @@ class MuelheimSpider(RisseSpider):
                  
     def parse_year(self, response):
         ids = response.xpath('//a').re(r'"to010.asp\?SILFDNR=(\S*)"')
-        # print(len(ids))
 
         for current in ids:
             request = scrapy.FormRequest(response.urljoin("to010.asp?"),
