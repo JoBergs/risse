@@ -27,20 +27,26 @@ class MuelheimSpider(RisseSpider):
 
             request.meta['path'] = os.path.join(response.meta['path'], titles[i].attrib['title'].split(" (Öffnet")[0])
 
-            yield request      
+            yield request 
 
-        # ACHTUNG: Anlagen können nicht verfügbar sein
-        # this can be fused with the other parsing of anlagen
+        anlagen = self.build_anlagen_requests(response)
+        for anlage in anlagen:
+            yield anlage
+
+    def build_anlagen_requests(self, response):
+        requests = []
+
         anlagen = response.xpath('//a[contains(@href, ".pdf")]')
-        anlagen = anlagen[:len(anlagen)//2]
+        # remove duplicates
+        anlagen = list(set([anlage.attrib['href'] for anlage in anlagen]))
 
         for anlage in anlagen:
-            request = scrapy.Request(response.urljoin(anlage.attrib['href']),
-                callback=self.save_pdf)
-            filename = os.path.basename(anlage.attrib['href'])
-            request.meta['path'] = os.path.join(response.meta['path'], filename)
+            request = scrapy.Request(response.urljoin(anlage), callback=self.save_pdf)
+            request.meta['path'] = os.path.join(response.meta['path'], 
+                os.path.basename(anlage))
+            requests.append(request)
 
-            yield request 
+        return requests 
 
     def parse_beratungsverlauf(self, response):  
         try:
@@ -57,16 +63,21 @@ class MuelheimSpider(RisseSpider):
         self.parse_beratungsverlauf(response)
 
         # mostly öffentliche Niederschrift
-        anlagen = response.xpath('//a[contains(@href, ".pdf")]')
+        # anlagen = response.xpath('//a[contains(@href, ".pdf")]')
 
+        # for anlage in anlagen:
+
+        #     request = scrapy.Request(response.urljoin(anlage.attrib['href']),
+        #         callback=self.save_pdf)
+        #     print('anlage.attrib ', anlage.attrib['href'])
+        #     print('anlage.attrib splitted ', anlage.attrib['href'].split('/')[-1])
+        #     request.meta['path'] = os.path.join(response.meta['path'], anlage.attrib['href'].split('/')[-1])
+
+        #     yield request
+
+        anlagen = self.build_anlagen_requests(response)
         for anlage in anlagen:
-
-            request = scrapy.Request(response.urljoin(anlage.attrib['href']),
-                callback=self.save_pdf)
-
-            request.meta['path'] = os.path.join(response.meta['path'], anlage.attrib['href'].split('/')[-1])
-
-            yield request
+            yield anlage
 
         volfdnr = response.xpath('//input[contains(@name, "VOLFDNR")]').attrib['value']
 

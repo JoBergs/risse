@@ -47,7 +47,7 @@ class DortmundSpider(RisseSpider):
 
             self.create_directories(os.path.join(*path))
 
-            self.save_file(full_path, response.text, True) 
+            self.save_file(os.path.join(*path, name + '.html'), response.text, True) 
 
             ids = response.xpath('//font/text()').re(r'\(Drucksache Nr.: (\S*)\)')
 
