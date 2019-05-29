@@ -15,6 +15,8 @@ Scraper to scrape PDFs from german Ratsinformationssysteme (Risse).
 * starter script
 * IBM cloud API interface
 * experiment with parameters in risse/risse/settings.py for more parallel requests
+* extend for more scrapers
+* ' ' to '-' for Linux in paths
 
 ## Installation (Linux)
 

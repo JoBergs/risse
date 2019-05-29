@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# import os, logging
-
-# import scrapy
-
-from risse.spiders.base import RisseSpider
+from risse.spiders.base import *
 
 
 class DortmundSpider(RisseSpider):

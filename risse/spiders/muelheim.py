@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# import  datetime, os, logging
-
-# import scrapy
-
 from risse.spiders.base import *
 
 current_year = datetime.datetime.now().year

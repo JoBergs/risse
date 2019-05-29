@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# import os, logging
-
-# import scrapy
-
 from risse.spiders.base import *
 
 from lxml import html
