@@ -2,19 +2,14 @@
 
 from risse.spiders.base import *
 
-current_year = datetime.datetime.now().year
-
-all_years = range(1998, current_year + 1)
-
-
-# ADD OVERWRITE TESTS to write HTML and move write HTML into base class -> is a generic write_file possible?
-
 # move path creation into base class?
 
 # it would be nice to have a general method for building requests in the base class
-#   and overwrite it for muelheim
+#   and overwrite it for muelheim -> yer, two functions build_request and build_form_request 
+#   would be nice
 class MuelheimSpider(RisseSpider):
     name = "muelheim"
+    all_years = range(1998, datetime.datetime.now().year + 1)
  
     def parse_vorlage(self, response):    
         dolfdnrs = response.xpath('//input[contains(@name, "DOLFDNR")]')
@@ -58,6 +53,7 @@ class MuelheimSpider(RisseSpider):
         self.save_file(beratungsverlauf_path, beratungsverlauf, True)    
 
     def parse_beschluss(self, response):
+        print(response.meta['path'])
         self.create_directories(response.meta['path'])
 
         self.parse_beratungsverlauf(response)
@@ -113,7 +109,8 @@ class MuelheimSpider(RisseSpider):
 
         topics = response.xpath('//a[contains(@href, "vo020.asp")]/text()').getall()
 
-        for i in range(len(urls)):            
+        for i in range(len(urls)):         
+            print(urls[i])   
             request = scrapy.FormRequest(response.urljoin(urls[i]),
                 formdata={'TOLFDNR': urls[i].strip('to020.asp?TOLFDNR=')},
                 callback=self.parse_beschluss)
@@ -141,6 +138,7 @@ class MuelheimSpider(RisseSpider):
             yield request
 
     # maybe this is better in the base class since it could be required for other scrapers
+    # this fails for leap years
     def get_dates(self, year, month):
         last_day = "31."
 
@@ -159,18 +157,14 @@ class MuelheimSpider(RisseSpider):
 
     def parse_calender(self, response):
 
-        if self.year:
-            all_years = [self.year]
+        if self.year:  # if year was passed as a parameter, scrape only that year
+            self.all_years = [self.year]
 
-        # move all_years into self
-        for year in all_years:
+        for year in self.all_years:
             from_day, to_day = self.get_dates(str(year), self.month)
             yield scrapy.FormRequest(
                 response.url,
-                formdata={
-                    'kaldatvon': from_day,
-                    'kaldatbis': to_day,                   
-                },
+                formdata={'kaldatvon': from_day, 'kaldatbis': to_day},
                 callback=self.parse_year
             )
 

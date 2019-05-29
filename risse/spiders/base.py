@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import datetime, logging, os
+import calender, datetime, logging, os
 
 import scrapy
 
@@ -34,7 +34,7 @@ class RisseSpider(scrapy.Spider):
         '''path:: target path where content should be saved,
         content:: either binary PDF or HTML text,
         is_html is True if a HTML should be saved and False for PDF'''
-        
+
         descriptor = 'w' if is_html else 'wb'
         message = 'HTML' if is_html else 'PDF'
         
@@ -64,3 +64,26 @@ class RisseSpider(scrapy.Spider):
                 mapping[key] = short
 
         return mapping
+
+    def get_dates(self, year, month):
+        ''' Find the date range for the given year and month for parsing
+        Sitzungen in  between. If only year is given, return 1.1.YEAR, 31.12.YEAR.
+        If additionally a month is given, return 1.MONTH.YEAR, LAST_DAY.MONTH.YEAR.
+        LAST_DAY is either 31, 30, 28 or 29 for leap years in february.'''
+        
+        last_day = "31."
+
+        if int(month) % 2 == 0:
+            last_day = "30."
+
+        if int(month) == 2:
+            last_day = "28."
+            if calendar.isleap(int(year)):
+                last_day = "29."
+
+        if month:
+            tmp = month
+            if len(tmp) == 1:
+                tmp = '0' + tmp
+            return "01." + month + "." + year, last_day + month + "." + year
+        return "01.01." + year, last_day + year
