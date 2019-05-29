@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 
-# CHANGE PARAMETERS IN settings.py FOR MORE PARALLEL REQUESTS
-
 # sudo pip3 install scrapy
 
 # scrapy startproject risse (required only for new projects)
 
 # cd risse
-# scrapy crawl dortmund -a stadt=Dortmund -a url=https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView -a root=test -a year=2018 -a month=3 -a overwrite=True
+# 
 
 import os, logging
 

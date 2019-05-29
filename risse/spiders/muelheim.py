@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# scrapy crawl muelheim -a stadt=Mülheim -a url=https://ratsinfo.muelheim-ruhr.de/buerger/allris.net.asp -a root=test -a year=2018 -a month=3 -a overwrite=True
+# 
 
 import  datetime, os, logging
 
