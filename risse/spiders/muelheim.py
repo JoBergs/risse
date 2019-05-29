@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 
-# 
+# import  datetime, os, logging
 
-import  datetime, os, logging
+# import scrapy
 
-import scrapy
-
-from risse.spiders.base import RisseSpider
+from risse.spiders.base import *
 
 current_year = datetime.datetime.now().year
 

@@ -1,15 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# sudo pip3 install scrapy
+# import os, logging
 
-# scrapy startproject risse (required only for new projects)
-
-# cd risse
-# 
-
-import os, logging
-
-import scrapy
+# import scrapy
 
 from risse.spiders.base import RisseSpider
 

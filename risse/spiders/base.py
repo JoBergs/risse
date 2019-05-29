@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import os
+import datetime, logging, os
 
 import scrapy
 
@@ -33,7 +33,7 @@ class RisseSpider(scrapy.Spider):
         full_path = response.meta['path']
 
         # test for overwrite
-        if self.overwrite == True or not os.path.isfile(full_path):
+        if self.overwrite or not os.path.isfile(full_path):
             with open(full_path, 'wb') as f:
                 f.write(response.body)
 

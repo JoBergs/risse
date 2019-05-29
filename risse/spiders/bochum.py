@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import os, logging
+# import os, logging
 
-import scrapy
+# import scrapy
 
-from risse.spiders.base import RisseSpider
+from risse.spiders.base import *
 
 from lxml import html
 
