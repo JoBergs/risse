@@ -25,7 +25,8 @@ class MuelheimSpider(RisseSpider):
                 formdata={'DOLFDNR': dolfdnrs[i].attrib['value'], 'options': "64"},
                 callback=self.save_pdf)
 
-            request.meta['path'] = os.path.join(response.meta['path'], titles[i].attrib['title'].split(" (Öffnet")[0])
+            request.meta['path'] = os.path.join(response.meta['path'], 
+                titles[i].attrib['title'].split(" (Öffnet")[0] + '.pdf')
 
             yield request 
 
@@ -61,19 +62,6 @@ class MuelheimSpider(RisseSpider):
         self.create_directories(response.meta['path'])
 
         self.parse_beratungsverlauf(response)
-
-        # mostly öffentliche Niederschrift
-        # anlagen = response.xpath('//a[contains(@href, ".pdf")]')
-
-        # for anlage in anlagen:
-
-        #     request = scrapy.Request(response.urljoin(anlage.attrib['href']),
-        #         callback=self.save_pdf)
-        #     print('anlage.attrib ', anlage.attrib['href'])
-        #     print('anlage.attrib splitted ', anlage.attrib['href'].split('/')[-1])
-        #     request.meta['path'] = os.path.join(response.meta['path'], anlage.attrib['href'].split('/')[-1])
-
-        #     yield request
 
         anlagen = self.build_anlagen_requests(response)
         for anlage in anlagen:
