@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import calender, datetime, logging, os
+import calendar, datetime, logging, os
 
 import scrapy
 
@@ -88,7 +88,7 @@ class RisseSpider(scrapy.Spider):
         Sitzungen in  between. If only year is given, return 1.1.YEAR, 31.12.YEAR.
         If additionally a month is given, return 1.MONTH.YEAR, LAST_DAY.MONTH.YEAR.'''
 
-        last_day = last_day_of_month(year, month)
+        last_day = self.last_day_of_month(year, month)
 
         if month:
             tmp = month

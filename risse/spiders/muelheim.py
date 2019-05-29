@@ -53,7 +53,6 @@ class MuelheimSpider(RisseSpider):
         self.save_file(beratungsverlauf_path, beratungsverlauf, True)    
 
     def parse_beschluss(self, response):
-        print(response.meta['path'])
         self.create_directories(response.meta['path'])
 
         self.parse_beratungsverlauf(response)
@@ -73,6 +72,8 @@ class MuelheimSpider(RisseSpider):
 
     def parse_sitzung(self, response):
         name = response.xpath('//a[contains(@href, "Gremium")]/text()').extract()[-1]
+        if name in self.mapping:
+            name = self.mapping[name]
 
         dolfdnr = None
         try:
@@ -80,9 +81,6 @@ class MuelheimSpider(RisseSpider):
         except:
             pass
         date = response.xpath('//a[contains(@title, "Sitzungskalender")]/text()').get().split('.')
-
-        if name in self.mapping:
-            name = self.mapping[name]
 
         # move joining in base class, pass root (not really necessary), name and date
         path = [self.root, date[-1], name, '-'.join(date[::-1]), '__Dokumente']
@@ -109,8 +107,7 @@ class MuelheimSpider(RisseSpider):
 
         topics = response.xpath('//a[contains(@href, "vo020.asp")]/text()').getall()
 
-        for i in range(len(urls)):         
-            print(urls[i])   
+        for i in range(len(urls)):          
             request = scrapy.FormRequest(response.urljoin(urls[i]),
                 formdata={'TOLFDNR': urls[i].strip('to020.asp?TOLFDNR=')},
                 callback=self.parse_beschluss)
@@ -126,6 +123,10 @@ class MuelheimSpider(RisseSpider):
             yield request
                  
     def parse_year(self, response):
+        ''' Herein, a specific year or the month of a specific year is parsed. 
+        All IDs of Sitzungen are extracted and .asp form request for each ID are executed. '''
+
+        # e.g. <a href="to010.asp?SILFDNR=11630">Sitzung der Bezirksvertretung 3</a>
         ids = response.xpath('//a').re(r'"to010.asp\?SILFDNR=(\S*)"')
 
         for current in ids:
@@ -137,25 +138,11 @@ class MuelheimSpider(RisseSpider):
 
             yield request
 
-    # maybe this is better in the base class since it could be required for other scrapers
-    # this fails for leap years
-    def get_dates(self, year, month):
-        last_day = "31."
-
-        if int(month) % 2 == 0:
-            last_day = "30."
-
-        if int(month) == 2:
-            last_day = "28."
-
-        if month:
-            tmp = month
-            if len(tmp) == 1:
-                tmp = '0' + tmp
-            return "01." + month + "." + year, last_day + month + "." + year
-        return "01.01." + year, last_day + year
-
     def parse_calender(self, response):
+        ''' Muelheim supports an .asp calender that retrieves Sitzungen.
+        This function requests all Sitzungen that happened between
+        from_day and to_day either for the year passed as CLI argument
+        or for all years that have Sizungen. '''
 
         if self.year:  # if year was passed as a parameter, scrape only that year
             self.all_years = [self.year]
@@ -165,8 +152,7 @@ class MuelheimSpider(RisseSpider):
             yield scrapy.FormRequest(
                 response.url,
                 formdata={'kaldatvon': from_day, 'kaldatbis': to_day},
-                callback=self.parse_year
-            )
+                callback=self.parse_year)
 
     def parse(self, response):
         url = response.xpath('//a[contains(@href, "si010_j.asp")]/@href').get()
