@@ -26,7 +26,6 @@ class MuelheimSpider(RisseSpider):
                 callback=self.save_pdf)
 
             request.meta['path'] = os.path.join(response.meta['path'], titles[i].attrib['title'].split(" (Öffnet")[0])
-            logging.info('Saving PDF %s', request.meta['path'])
 
             yield request      
 
@@ -40,7 +39,6 @@ class MuelheimSpider(RisseSpider):
                 callback=self.save_pdf)
             filename = os.path.basename(anlage.attrib['href'])
             request.meta['path'] = os.path.join(response.meta['path'], filename)
-            logging.info('Saving PDF %s', request.meta['path'])
 
             yield request 
 
@@ -67,7 +65,6 @@ class MuelheimSpider(RisseSpider):
                 callback=self.save_pdf)
 
             request.meta['path'] = os.path.join(response.meta['path'], anlage.attrib['href'].split('/')[-1])
-            logging.info('Saving PDF %s', request.meta['path'])
 
             yield request
 
@@ -106,7 +103,6 @@ class MuelheimSpider(RisseSpider):
                 callback=self.save_pdf)
 
             request.meta['path'] = os.path.join(*path, 'oeffentliche_Niederschrift.pdf')
-            logging.info('Saving PDF %s', request.meta['path'])
 
             yield request
 
@@ -148,6 +144,7 @@ class MuelheimSpider(RisseSpider):
 
             yield request
 
+    # maybe this is better in the base class since it could be required for other scrapers
     def get_dates(self, year, month):
         last_day = "31."
 

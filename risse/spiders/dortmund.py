@@ -15,7 +15,6 @@ class DortmundSpider(RisseSpider):
             request = scrapy.Request(response.urljoin(links[i].attrib['href']),
                 callback=self.save_pdf)
             request.meta['path'] = os.path.join(response.meta['path'], links[i].attrib['href'].split('/')[-1].rstrip('?OpenElement'))
-            logging.info('Saving PDF %s', request.meta['path'])
 
             yield request
 
@@ -51,7 +50,6 @@ class DortmundSpider(RisseSpider):
             # test if we overwrite
             full_path = os.path.join(*path, name + '.html')
             if self.overwrite == True or not os.path.isfile(full_path):
-                logging.info('Saving HTML %s', full_path)
                 with open(full_path, 'w') as f:
                     f.write(response.text)
 

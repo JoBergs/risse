@@ -57,7 +57,6 @@ class BochumSpider(RisseSpider):
             # DRAGONS: the filenames are not resolved like in the browser;
             # for Linux i had to replace /
             request.meta['path'] = os.path.join(*full_path, filenames[i].replace('/', '').replace(':', '') + '.pdf')
-            logging.info('Saving PDF %s', request.meta['path'])
 
             yield request
 
@@ -92,7 +91,6 @@ class BochumSpider(RisseSpider):
                 request = scrapy.Request(response.urljoin(einladungen[i]),
                     callback=self.save_pdf)
                 request.meta['path'] = os.path.join(*path, "Einladung.pdf")
-                logging.info('Saving PDF %s', request.meta['path'])
 
                 yield request
 
@@ -100,7 +98,6 @@ class BochumSpider(RisseSpider):
                 request = scrapy.Request(response.urljoin(niederschriften[i]),
                     callback=self.save_pdf)
                 request.meta['path'] = os.path.join(*path, "Niederschrift_oeffentlich.pdf")
-                logging.info('Saving PDF %s', request.meta['path'])
 
                 yield request    
 
