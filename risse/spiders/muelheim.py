@@ -30,9 +30,8 @@ class MuelheimSpider(RisseSpider):
 
             yield request 
 
-        anlagen = self.build_anlagen_requests(response)
-        for anlage in anlagen:
-            yield anlage
+        for request in self.build_anlagen_requests(response):
+            yield request
 
     def build_anlagen_requests(self, response):
         requests = []
@@ -63,9 +62,8 @@ class MuelheimSpider(RisseSpider):
 
         self.parse_beratungsverlauf(response)
 
-        anlagen = self.build_anlagen_requests(response)
-        for anlage in anlagen:
-            yield anlage
+        for request in self.build_anlagen_requests(response):
+            yield request
 
         volfdnr = response.xpath('//input[contains(@name, "VOLFDNR")]').attrib['value']
 
