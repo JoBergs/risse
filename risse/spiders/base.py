@@ -31,6 +31,10 @@ class RisseSpider(scrapy.Spider):
         self.mapping = self.parse_mapping(map_path)
 
     def save_file(self, path, content, is_html):
+        '''path:: target path where content should be saved,
+        content:: either binary PDF or HTML text,
+        is_html is True if a HTML should be saved and False for PDF'''
+        
         descriptor = 'w' if is_html else 'wb'
         message = 'HTML' if is_html else 'PDF'
         
@@ -48,6 +52,10 @@ class RisseSpider(scrapy.Spider):
             os.makedirs(path) 
 
     def parse_mapping(self, path):
+        '''path is the path to the mapping of Gremium name to an abbreviation
+        for the given city
+        returns a dictionary {GREMIUM : ABBREVIATION} '''
+
         mapping = {}
 
         with open(path, 'r') as f:

@@ -78,7 +78,6 @@ class MuelheimSpider(RisseSpider):
     def parse_sitzung(self, response):
         name = response.xpath('//a[contains(@href, "Gremium")]/text()').extract()[-1]
 
-        # not every sitzung has a öffentliche Niederschrift?
         dolfdnr = None
         try:
             dolfdnr = response.xpath('//input[contains(@name, "DOLFDNR")]').attrib['value']
@@ -93,7 +92,7 @@ class MuelheimSpider(RisseSpider):
         path = [self.root, date[-1], name, '-'.join(date[::-1]), '__Dokumente']
         self.create_directories(os.path.join(*path))
 
-        # not all Sitzungen have an oeffentliche Niederschrift
+        # not every Sitzung has a oeffentliche Niederschrift
         if dolfdnr:
             request = scrapy.FormRequest(response.urljoin("do027.asp?"),
                 formdata={'DOLFDNR': dolfdnr, 'options': "64"},
