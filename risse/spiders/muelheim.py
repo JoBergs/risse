@@ -102,8 +102,7 @@ class MuelheimSpider(RisseSpider):
             yield request
 
     # can probably be shortened with better selectors
-    def build_topic_requests(self, response, path):
-        requests = []
+    def get_topic_urls(self, response):
         trs = response.xpath('//tr[contains(@class, "zl11") or contains(@class, "zl12")]')
         urls = response.xpath('//a[contains(@href, "to020.asp")]/@href').getall() 
 
@@ -113,6 +112,12 @@ class MuelheimSpider(RisseSpider):
             if "vo020.asp" not in trs[i].get():
                 urls.pop(i)
 
+        return urls
+    
+    def build_topic_requests(self, response, path):
+        requests = []
+
+        urls = self.get_topic_urls(response)
         topics = response.xpath('//a[contains(@href, "vo020.asp")]/text()').getall()
 
         for i in range(len(urls)):          
