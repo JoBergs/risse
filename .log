@@ -1,0 +1,32 @@
+2019-04-14 20:50:03 [twisted] CRITICAL: Unhandled error in Deferred:
+2019-04-14 20:50:03 [twisted] CRITICAL: Unhandled error in Deferred:
+2019-04-14 20:50:03 [twisted] CRITICAL: 
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.6/dist-packages/twisted/internet/defer.py", line 1418, in _inlineCallbacks
+    result = g.send(result)
+  File "/usr/local/lib/python3.6/dist-packages/scrapy/crawler.py", line 79, in crawl
+    self.spider = self._create_spider(*args, **kwargs)
+  File "/usr/local/lib/python3.6/dist-packages/scrapy/crawler.py", line 102, in _create_spider
+    return self.spidercls.from_crawler(self, *args, **kwargs)
+  File "/usr/local/lib/python3.6/dist-packages/scrapy/spiders/__init__.py", line 51, in from_crawler
+    spider = cls(*args, **kwargs)
+  File "/home/anton/Desktop/freelancer.com/document_scraper/risse/risse/spiders/base.py", line 24, in __init__
+    self.mapping = self.parse_mapping(map_path)
+  File "/home/anton/Desktop/freelancer.com/document_scraper/risse/risse/spiders/base.py", line 41, in parse_mapping
+    with open(path, 'r') as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'risse/spiders/.txt'
+2019-04-14 20:50:03 [twisted] CRITICAL: 
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.6/dist-packages/twisted/internet/defer.py", line 1418, in _inlineCallbacks
+    result = g.send(result)
+  File "/usr/local/lib/python3.6/dist-packages/scrapy/crawler.py", line 79, in crawl
+    self.spider = self._create_spider(*args, **kwargs)
+  File "/usr/local/lib/python3.6/dist-packages/scrapy/crawler.py", line 102, in _create_spider
+    return self.spidercls.from_crawler(self, *args, **kwargs)
+  File "/usr/local/lib/python3.6/dist-packages/scrapy/spiders/__init__.py", line 51, in from_crawler
+    spider = cls(*args, **kwargs)
+  File "/home/anton/Desktop/freelancer.com/document_scraper/risse/risse/spiders/base.py", line 24, in __init__
+    self.mapping = self.parse_mapping(map_path)
+  File "/home/anton/Desktop/freelancer.com/document_scraper/risse/risse/spiders/base.py", line 41, in parse_mapping
+    with open(path, 'r') as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'risse/spiders/.txt'
