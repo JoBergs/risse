@@ -47,11 +47,7 @@ class DortmundSpider(RisseSpider):
 
             self.create_directories(os.path.join(*path))
 
-            # test if we overwrite
-            full_path = os.path.join(*path, name + '.html')
-            if self.overwrite == True or not os.path.isfile(full_path):
-                with open(full_path, 'w') as f:
-                    f.write(response.text)
+            self.save_file(full_path, response.text, True) 
 
             ids = response.xpath('//font/text()').re(r'\(Drucksache Nr.: (\S*)\)')
 
