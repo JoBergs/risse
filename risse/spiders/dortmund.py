@@ -9,9 +9,8 @@ class DortmundSpider(RisseSpider):
     def parse_iframe(self, response):
         links = response.xpath('//a[contains(@href, "pdf?OpenElement")]')
 
-        # THIS SHOULD BE A FUNCTION (maybe)
+        # THIS SHOULD BE A FUNCTION!!! a lot of stuff can be fused with this in the base class!
         for i in range(len(links)):
-
             request = scrapy.Request(response.urljoin(links[i].attrib['href']),
                 callback=self.save_pdf)
             request.meta['path'] = os.path.join(response.meta['path'], links[i].attrib['href'].split('/')[-1].rstrip('?OpenElement'))

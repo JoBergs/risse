@@ -19,10 +19,24 @@ Scraper to scrape PDFs from german Ratsinformationssysteme (Risse).
 * ' ' to '-' for Linux in paths
 
 ## Installation (Linux)
-
+Enter in the terminal
 ```
-sudo pip3 install scrapy, git
-git clone https://github.com/JoBergs
+sudo pip3 install scrapy git
+git clone https://github.com/JoBergs/risse.git
+```
+
+## Installation (Windows)
+This assumes Python is already installed.
+
+For Scrapy see
+*https://www.accordbox.com/blog/scrapy-tutorial-4-how-install-scrapy-windows/*
+
+For git see
+*https://www.jamessturtevant.com/posts/5-Ways-to-install-git-on-Windows/*
+
+Then, enter in the Terminal
+```
+git clone https://github.com/JoBergs/risse.git
 ```
 
 ## Update
