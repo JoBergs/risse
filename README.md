@@ -4,19 +4,19 @@ Scraper to scrape PDFs from german Ratsinformationssysteme (Risse).
 
 ## TODO
 
+* ~~git/GitHub versioning~~
 * docstrings
 * refactor general structure
-* richt text readme
+* ~~markup readme~~
 * software tests
 * fix schaltjahre
-* sample html files of scraped structure
 * improve logger
 * download validation
-* starter script
+* starter script (configuration file???)
 * IBM cloud API interface
-* experiment with parameters in risse/risse/settings.py for more parallel requests
 * extend for more scrapers
-* ' ' to '-' for Linux in paths
+* great would be if every function has an url in the docstring which site it works on
+* also add some kind of flow diagram how each scraper scrapes here
 
 ## Installation (Linux)
 Enter in the terminal

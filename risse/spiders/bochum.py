@@ -4,6 +4,10 @@ from risse.spiders.base import *
 
 from lxml import html
 
+# full run 293.3MB ~1h
+#   for testing Bezirksvertretung Bochum-Mitte
+#      37.2MB
+
 class BochumSpider(RisseSpider):
     name = "bochum"
 
@@ -115,6 +119,9 @@ class BochumSpider(RisseSpider):
             yield request      
 
     def parse_gremien(self, response):
+        import ipdb
+        ipdb.set_trace()
+
         urls = response.xpath('//a[contains(@class, "smccontextmenulink smcmenucontext_fct_sitzungen")]/@href').getall()
         names = response.xpath('//a[contains(@class, "smccontextmenulink smcmenucontext_fct_sitzungen")]/@title').getall()
         names = [name.strip('zu ').split(':')[0] for name in names]
@@ -122,15 +129,17 @@ class BochumSpider(RisseSpider):
 
         for i in range(len(urls)):
             # TESTING!
-            # if names[i] == "Rat":
-            request = scrapy.Request(response.urljoin(urls[i]),
-                callback=self.parse_gremium)
-            request.meta['name'] = names[i]
+            if names[i] == "Bezirksvertretung Bochum-Mitte":
+                request = scrapy.Request(response.urljoin(urls[i]),
+                    callback=self.parse_gremium)
+                request.meta['name'] = names[i]
 
-            yield request   
+                yield request   
 
     def parse(self, response):
-        url = response.xpath('//a[contains(@class, "smcuser_nav_gremien")]/@href').get()
-        request = scrapy.Request(response.urljoin(url), callback=self.parse_gremien)
+        """Find the URL to 'Gremien' on the main page and form a request with it.
+        Site: https://session.bochum.de/bi/infobi.asp """
 
-        yield request  
+        #e.g. '<a href="gr0040.asp" title="Diese Seite zeigt eine Liste der Gremien, für die im Sitzungsdienst Informationen verwaltet werden. Als Filter stehen die Zeiträume zur Verfügung. " class="smcuser_nav_gremien">Gremien</a>'
+        url = response.xpath('//a[contains(@class, "smcuser_nav_gremien")]/@href').get()
+        yield self.build_request(response.urljoin(url), self.parse_gremien, '')  
