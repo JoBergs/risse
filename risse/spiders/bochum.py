@@ -42,34 +42,37 @@ class BochumSpider(RisseSpider):
 
         return "kein_TOPIC"
 
-    def parse_ausschuss(self, response):
+    def parse_sitzung(self, response):
+        ''' Function to parse all PDFs of a single Sitzung.
+        Site: https://session.bochum.de/bi/to0040.asp?__ksinr=10218 '''
+
+        # e.g. '<a href="getfile.asp?id=398523&amp;type=do&amp;" title="Beschlussvorlage der Verwaltung " target="_blank">Beschlussvorlage der Verwaltung <span class="smcwrapsmall smcdosize" title="Dateigröße">347\xa0KB </span></a>'
         pdfs = response.xpath('//td[contains(@class, "smc_doc smcdocname smcdocname1")]/a[contains(@href, "getfile.asp")]/@href').getall()
         filenames = response.xpath('//a[contains(@href, "getfile.asp")]/text()').getall()
 
         for i in range(len(pdfs)):
+            # e.g. <a href="vo0050.asp?__kvonr=7068726&amp;voselect=10218" title="Vorlage anzeigen: Veranstaltungen der Bezirksvertretung Bochum-Mitte " class="smc_doc smc_field_voname smc_datatype_vo">20180032</a>
             topic_xpath = '//a[contains(@href, "' + pdfs[i] + '")]/ancestor::*/*/a[contains(@class, "smc_doc smc_field_voname smc_datatype_vo")]/text()'
+            tmp = response.xpath('//a[contains(@href, "' + pdfs[i] + '")]/ancestor::*/*/a[contains(@class, "smc_doc smc_field_voname smc_datatype_vo")]').get()
             topic = response.xpath(topic_xpath).get()
 
             trs = response.xpath('//tr[contains(@class, "smc_toph")]')
 
+            # find index of the current pdf in table rows to extract topic and top later
+            # find index of the current pdf in table rows to extract topic and top later
             for j in range(len(trs)):
                 if pdfs[i].split('&')[0] in trs[j].get():
-                    break;
+                    break; 
 
-            top = self.extract_top(j, trs)
-            topic = self.extract_topic(j, trs)
-
+            top, topic = self.extract_top(j, trs), self.extract_topic(j, trs)
             full_path = response.meta['path'] + [top, topic]
-
             self.create_directories(os.path.join(*full_path))
 
-            request = scrapy.Request(response.urljoin(pdfs[i]),
-                callback=self.save_pdf)
-            # DRAGONS: the filenames are not resolved like in the browser;
-            # for Linux i had to replace / and :
-            request.meta['path'] = os.path.join(*full_path, filenames[i].replace('/', '').replace(':', '') + '.pdf')
+            # DRAGONS: filenames are resolved badly in browser; for Linux i had to replace / and :
+            request = self.build_request(response.urljoin(pdfs[i]), self.save_pdf, 
+                os.path.join(*full_path, filenames[i].replace('/', '').replace(':', '') + '.pdf'))
 
-            yield request
+            yield request 
 
     def parse_gremium(self, response):
         """ Function to scrape all Sitzungen of a Gremium. Validates that the Sitzung
@@ -97,7 +100,7 @@ class BochumSpider(RisseSpider):
         urls contains the Ausschuss urls, dates is necessary to see if the current Sitzung
         fits the CLI parameters, einladungen is a list of URLs to Einladung PDFs
         and niederschriften a list of URLs to Niederschrift PDFs. """
-        
+
         # e.g. <td class="smc_td smc_field_silink"><a href="to0040.asp?__ksinr=11487" title="Details anzeigen: Bezirksvertretung Bochum-Mitte 16.05.2019 " class="smc_doc smc_datatype_si">16.05.2019</a><!--SMCINFO:si.bi.1.4.1.1.16.1.3 --> 15:00-18:09</td>
         urls = response.xpath('//tr[contains(@class, "smcrow1") or contains(@class, "smcrow2") or contains(@class, "smcrown")]/*/a/@href').getall()
         dates = response.xpath('//tr[contains(@class, "smcrow1") or contains(@class, "smcrow2") or contains(@class, "smcrown")]/*/a/text()').getall()
@@ -122,7 +125,7 @@ class BochumSpider(RisseSpider):
     def build_gremium_requests(self, response, path, url, einladung, niederschrift):
         """ For each Gremium, three requests need to be build: one request
         for the Einladung, one request for the Niederschrift and one request
-        for parsing the Ausschuss. """
+        for parsing the Sitzung. """
 
         if einladung:
             request1 = self.build_request(response.urljoin(einladung), 
@@ -133,7 +136,7 @@ class BochumSpider(RisseSpider):
                 self.save_pdf, os.path.join(*path, "Niederschrift_oeffentlich.pdf"))  
 
         request3 = self.build_request(response.urljoin(url), 
-            self.parse_ausschuss, path[:-1])
+            self.parse_sitzung, path[:-1])
 
         return [request1, request2, request3]   
 
