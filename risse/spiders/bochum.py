@@ -8,9 +8,13 @@ class BochumSpider(RisseSpider):
     name = "bochum"
 
     def extract_top(self, index, trs):
+        """ Since since a TOp can span multiple rows, it's necessary
+        to search for the right TOp for every Vorlage. This function iterates up
+        in the list or rows (trs) until it finds a row with a TOP and returns it. 
+        If no TOP is found, 'kein_TOP' is returned. """
+
         while index > 0:
-            row = trs[index].get()
-            tree = html.fromstring(row)
+            tree = html.fromstring(trs[index].get())
             top = tree.xpath('//tr/td[contains(@class, "smc_tophn")]/text()') 
 
             if top != []:
@@ -20,9 +24,12 @@ class BochumSpider(RisseSpider):
         return "kein_TOP"
 
     def extract_topic(self, index, trs):
+        """ As for TOPs, a topic can span multiple rows with Vorlagen.
+        This function up iterates over the list of rows (trs) until a valid topic
+        can be extracted. If there is none, it returns 'kein_TOPIC' instead.  """
+
         while index > 0:
-            row = trs[index].get()
-            tree = html.fromstring(row)
+            tree = html.fromstring(trs[index].get())
             top = tree.xpath('//tr/td/a[contains(@class, "smc_doc smc_field_voname smc_datatype_vo")]/text()') 
 
             if top != []:

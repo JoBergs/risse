@@ -51,12 +51,6 @@ class RisseSpider(scrapy.Spider):
         if not os.path.isdir(path):
             os.makedirs(path) 
 
-    # def build_form_request(self, url, data, fct, path):
-    #     request = scrapy.FormRequest(url, formdata=data, callback=fct)
-    #     request.meta['path'] = path 
-        
-    #     return request 
-
     def build_request(self, url, fct, path, data=None):
         if data:
             request = scrapy.FormRequest(url, formdata=data, callback=fct)
