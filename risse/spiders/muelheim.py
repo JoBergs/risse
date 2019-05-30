@@ -2,11 +2,7 @@
 
 from risse.spiders.base import *
 
-# move path creation into base class?
 
-# it would be nice to have a general method for building requests in the base class
-#   and overwrite it for muelheim -> yer, two functions build_request and build_form_request 
-#   would be nice
 class MuelheimSpider(RisseSpider):
     name = "muelheim"
     all_years = range(1998, datetime.datetime.now().year + 1)
@@ -16,18 +12,14 @@ class MuelheimSpider(RisseSpider):
         Herein, the Vorlage and all Anlagen are extracted. """
 
         # e.g. <input type="hidden" name="DOLFDNR" value="563803">
-        # CAN BE FUSED WITH OTHER NUMBER EXTRACTORS
         dolfdnrs = response.xpath('//input[contains(@name, "DOLFDNR")]')
         # e.g. <input type="submit" class="il2_p" value="Vorlage" title="Vorlage (Öffnet PDF-Datei in neuem Fenster)">
         titles = response.xpath('//input[contains(@class, "il2_p")]')
 
         for i in range(len(dolfdnrs)):
-            request = scrapy.FormRequest(response.urljoin("do027.asp?"),
-                formdata={'DOLFDNR': dolfdnrs[i].attrib['value'], 'options': "64"},
-                callback=self.save_pdf)
-
-            request.meta['path'] = os.path.join(response.meta['path'], 
-                titles[i].attrib['title'].split(" (Öffnet")[0] + '.pdf')
+            request = self.build_request(response.urljoin("do027.asp?"), self.save_pdf, 
+                os.path.join(response.meta['path'], titles[i].attrib['title'].split(" (Öffnet")[0] + '.pdf'),
+                {'DOLFDNR': dolfdnrs[i].attrib['value'], 'options': "64"})
 
             yield request 
 
@@ -37,17 +29,17 @@ class MuelheimSpider(RisseSpider):
     def build_anlagen_requests(self, response):
         """Extract all Anlagen and create a request for each of them """
 
-        requests = []
-
         # e.g. '<a href="___tmp/tmp/450810361031878127/1031878127/00565584/84-Anlagen/01/B18_0134-01.pdf" target="_blank" title="Dauer ca. 2 sec [DSL] / 29 sec [ISDN] / 33 sec [56K] (Öffnet Dokument in neuem Fenster)" onmouseover="status=\'B 18_0134-01 (235 KB)\'; return true;" onmouseout="status=\'\'; return true;">B 18_0134-01 (235 KB)</a>'
         anlagen = response.xpath('//a[contains(@href, ".pdf")]')
         # remove duplicates
         anlagen = list(set([anlage.attrib['href'] for anlage in anlagen]))
 
+        requests = []
+
         for anlage in anlagen:
-            request = scrapy.Request(response.urljoin(anlage), callback=self.save_pdf)
-            request.meta['path'] = os.path.join(response.meta['path'], 
-                os.path.basename(anlage))
+            request = self.build_request(response.urljoin(anlage), self.save_pdf,
+                os.path.join(response.meta['path'], os.path.basename(anlage)))
+
             requests.append(request)
 
         return requests 
@@ -80,12 +72,8 @@ class MuelheimSpider(RisseSpider):
         # e.g. <input type="hidden" name="VOLFDNR" value="20431">
         volfdnr = response.xpath('//input[contains(@name, "VOLFDNR")]').attrib['value']
 
-        # request = build
-        request = scrapy.FormRequest(response.urljoin('vo020.asp'),
-            formdata={'VOLFDNR': volfdnr},
-            callback=self.parse_vorlage)
-
-        request.meta['path'] = response.meta['path']
+        request = self.build_request(response.urljoin('vo020.asp'),
+            self.parse_vorlage, response.meta['path'], {'VOLFDNR': volfdnr})
 
         yield request
 
@@ -95,11 +83,10 @@ class MuelheimSpider(RisseSpider):
         try:
             # e.g. <input type="hidden" name="DOLFDNR" value="564806">
             dolfdnr = response.xpath('//input[contains(@name, "DOLFDNR")]').attrib['value']
-            request = scrapy.FormRequest(response.urljoin("do027.asp?"),
-                formdata={'DOLFDNR': dolfdnr, 'options': "64"},
-                callback=self.save_pdf)
 
-            request.meta['path'] = os.path.join(*path, 'oeffentliche_Niederschrift.pdf')
+            request = self.build_request(response.urljoin("do027.asp?"),
+                self.save_pdf, os.path.join(*path, 'oeffentliche_Niederschrift.pdf'),
+                {'DOLFDNR': dolfdnr, 'options': "64"})
 
             return request
         except:  # not every Sitzung has a oeffentliche Niederschrift
@@ -152,18 +139,17 @@ class MuelheimSpider(RisseSpider):
         topics = response.xpath('//a[contains(@href, "vo020.asp")]/text()').getall()
 
         for i in range(len(urls)):          
-            request = scrapy.FormRequest(response.urljoin(urls[i]),
-                formdata={'TOLFDNR': urls[i].strip('to020.asp?TOLFDNR=')},
-                callback=self.parse_beschluss)
-
             # this fixes an error in the HTML layout: the TOP might be in a <span> or not
             try:
                 # e.g. '<td class="text4" nowrap><a href="to010.asp?SILFDNR=12002&amp;TOLFDNR=90172#beschluss" title="Auswählen">Ö\xa02</a></td>'
                 top = response.xpath('//a[contains(@href, "' + urls[i] + '")]/parent::*/parent::*/td[contains(@class, "text4")]/a/text()').get().strip('Ö\xa0') .lstrip('0')
             except: 
-                top = response.xpath('//a[contains(@href, "' + urls[i] + '")]/parent::*/parent::*/td[contains(@class, "text4")]/span/a/text()').get().strip('Ö\xa0') .lstrip('0')
+                top = response.xpath('//a[contains(@href, "' + urls[i] + '")]/parent::*/parent::*/td[contains(@class, "text4")]/span/a/text()').get().strip('Ö\xa0') .lstrip('0')     
 
-            request.meta['path'] = os.path.join(*path[:-1], top or "kein_TOP", topics[i])
+            request = self.build_request(response.urljoin(urls[i]),
+                self.parse_beschluss, os.path.join(*path[:-1], top or "kein_TOP", topics[i]),
+                {'TOLFDNR': urls[i].strip('to020.asp?TOLFDNR=')})
+
             requests.append(request)
 
         return requests
@@ -176,10 +162,8 @@ class MuelheimSpider(RisseSpider):
         ids = response.xpath('//a').re(r'"to010.asp\?SILFDNR=(\S*)"')
 
         for current in ids:
-            request = scrapy.FormRequest(response.urljoin("to010.asp?"),
-                formdata={'SILFDNR': current},
-                callback=self.parse_sitzung)
-
+            request = self.build_request(response.urljoin('to010.asp'),
+                self.parse_sitzung, '', {'SILFDNR': current})
             yield request
 
     def parse_calender(self, response):
@@ -193,16 +177,14 @@ class MuelheimSpider(RisseSpider):
 
         for year in self.all_years:
             from_day, to_day = self.get_dates(str(year), self.month)
-            yield scrapy.FormRequest(
-                response.url,
-                formdata={'kaldatvon': from_day, 'kaldatbis': to_day},
-                callback=self.parse_year)
+
+            request = self.build_request(response.url,
+                self.parse_year, '', {'kaldatvon': from_day, 'kaldatbis': to_day})
+            yield request
 
     def parse(self, response):
         """ Find the URL that links to the calender from the Mülheim
         main page and form a request. """
 
         url = response.xpath('//a[contains(@href, "si010_j.asp")]/@href').get()
-        request = scrapy.Request(response.urljoin(url), callback=self.parse_calender)
-
-        yield request  
+        yield self.build_request(response.urljoin(url), self.parse_calender, '')  
