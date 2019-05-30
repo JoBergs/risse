@@ -80,6 +80,7 @@ class MuelheimSpider(RisseSpider):
         # e.g. <input type="hidden" name="VOLFDNR" value="20431">
         volfdnr = response.xpath('//input[contains(@name, "VOLFDNR")]').attrib['value']
 
+        # request = build
         request = scrapy.FormRequest(response.urljoin('vo020.asp'),
             formdata={'VOLFDNR': volfdnr},
             callback=self.parse_vorlage)
@@ -113,7 +114,6 @@ class MuelheimSpider(RisseSpider):
         if name in self.mapping:
             name = self.mapping[name]
 
-        # MOVE joining in base class, pass root (not really necessary), name and date ???
         # e.g. <a href="si010_j.asp?YY=2018&amp;MM=03&amp;DD=05" title="Sitzungskalender 03/2018 anzeigen">05.03.2018</a>
         date = response.xpath('//a[contains(@title, "Sitzungskalender")]/text()').get().split('.')
         path = [self.root, date[-1], name, '-'.join(date[::-1]), '__Dokumente']
