@@ -6,7 +6,7 @@ from lxml import html
 
 # full run 293.3MB ~1h
 #   for testing Bezirksvertretung Bochum-Mitte
-#      37.2MB
+#      37.2MB 37.2 MB
 
 class BochumSpider(RisseSpider):
     name = "bochum"
@@ -71,7 +71,7 @@ class BochumSpider(RisseSpider):
 
             yield request
 
-    def parse_gremium(self, response):
+    def get_gremium_data(self, response):
         urls = response.xpath('//tr[contains(@class, "smcrow1") or contains(@class, "smcrow2") or contains(@class, "smcrown")]/*/a/@href').getall()
         dates = response.xpath('//tr[contains(@class, "smcrow1") or contains(@class, "smcrow2") or contains(@class, "smcrown")]/*/a/text()').getall()
 
@@ -87,6 +87,11 @@ class BochumSpider(RisseSpider):
             if "Einladung" not in tables[i]:
                 einladungen.insert(i, None)
 
+        return urls, dates, niederschriften, einladungen
+
+    def parse_gremium(self, response):
+        urls, dates, niederschriften, einladungen = get_gremium_data(response)
+
         for i in range(len(urls)):
             # it's bad to use path both as list and string
             date = dates[i].split('.')
@@ -99,29 +104,27 @@ class BochumSpider(RisseSpider):
             self.create_directories(os.path.join(*path))
 
             if einladungen[i]:
-                request = scrapy.Request(response.urljoin(einladungen[i]),
-                    callback=self.save_pdf)
-                request.meta['path'] = os.path.join(*path, "Einladung.pdf")
+                request = self.build_request(response.urljoin(einladungen[i]), 
+                    self.save_pdf, os.path.join(*path, "Einladung.pdf"))
 
                 yield request
 
             if niederschriften[i]:
-                request = scrapy.Request(response.urljoin(niederschriften[i]),
-                    callback=self.save_pdf)
-                request.meta['path'] = os.path.join(*path, "Niederschrift_oeffentlich.pdf")
+                request = self.build_request(response.urljoin(niederschriften[i]), 
+                    self.save_pdf, os.path.join(*path, "Niederschrift_oeffentlich.pdf"))
 
                 yield request    
 
-            request = scrapy.Request(response.urljoin(urls[i]),
-                callback=self.parse_ausschuss)
-            request.meta['path'] = path[:-1]
+            request = self.build_request(response.urljoin(urls[i]), 
+                self.parse_ausschuss, path[:-1])
 
             yield request      
 
     def parse_gremien(self, response):
-        import ipdb
-        ipdb.set_trace()
+        """ Find URLs for all Gremien and form a request for each of them.
+        Site: https://session.bochum.de/bi/gr0040.asp """
 
+        # e.g. '<a href="si0041.asp?__ctopic=gr&amp;__kgrnr=977997" title="zu Ausschuss für Arbeit, Gesundheit und Soziales: Sitzungen\r\nDiese Seite liefert eine Übersicht der Sitzungen eines Gremiums. Als Filterkriterien sind Zeiträume verfügbar. " class="smccontextmenulink smcmenucontext_fct_sitzungen">Sitzungen</a>'
         urls = response.xpath('//a[contains(@class, "smccontextmenulink smcmenucontext_fct_sitzungen")]/@href').getall()
         names = response.xpath('//a[contains(@class, "smccontextmenulink smcmenucontext_fct_sitzungen")]/@title').getall()
         names = [name.strip('zu ').split(':')[0] for name in names]
@@ -130,8 +133,7 @@ class BochumSpider(RisseSpider):
         for i in range(len(urls)):
             # TESTING!
             if names[i] == "Bezirksvertretung Bochum-Mitte":
-                request = scrapy.Request(response.urljoin(urls[i]),
-                    callback=self.parse_gremium)
+                request = self.build_request(response.urljoin(urls[i]), self.parse_gremium, '')
                 request.meta['name'] = names[i]
 
                 yield request   
