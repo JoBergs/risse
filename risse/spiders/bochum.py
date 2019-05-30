@@ -59,7 +59,6 @@ class BochumSpider(RisseSpider):
             trs = response.xpath('//tr[contains(@class, "smc_toph")]')
 
             # find index of the current pdf in table rows to extract topic and top later
-            # find index of the current pdf in table rows to extract topic and top later
             for j in range(len(trs)):
                 if pdfs[i].split('&')[0] in trs[j].get():
                     break; 
