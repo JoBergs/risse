@@ -4,43 +4,27 @@ from risse.spiders.base import *
 
 from lxml import html
 
-# full run 293.3MB ~1h
-#   for testing Bezirksvertretung Bochum-Mitte
-#      37.2MB 37.2 MB
 
 class BochumSpider(RisseSpider):
     name = "bochum"
 
-    def extract_top(self, index, trs):
-        """ Since since a TOp can span multiple rows, it's necessary
-        to search for the right TOp for every Vorlage. This function iterates up
-        in the list or rows (trs) until it finds a row with a TOP and returns it. 
-        If no TOP is found, 'kein_TOP' is returned. """
+    def find_top_and_topic(self, index, trs):
+        top_result = "kein_TOP" 
+        topic_result = "kein_TOPIC" 
 
         while index > 0:
             tree = html.fromstring(trs[index].get())
             top = tree.xpath('//tr/td[contains(@class, "smc_tophn")]/text()') 
+            topic = tree.xpath('//tr/td/a[contains(@class, "smc_doc smc_field_voname smc_datatype_vo")]/text()') 
 
-            if top != []:
-                return top[0]
+            if top != [] and top_result == "kein_TOP":
+                top_result = top[0]
+            if topic != [] and topic_result == "kein_TOPIC":
+                topic_result = topic[0]
+
             index -= 1
 
-        return "kein_TOP"
-
-    def extract_topic(self, index, trs):
-        """ As for TOPs, a topic can span multiple rows with Vorlagen.
-        This function up iterates over the list of rows (trs) until a valid topic
-        can be extracted. If there is none, it returns 'kein_TOPIC' instead.  """
-
-        while index > 0:
-            tree = html.fromstring(trs[index].get())
-            top = tree.xpath('//tr/td/a[contains(@class, "smc_doc smc_field_voname smc_datatype_vo")]/text()') 
-
-            if top != []:
-                return top[0]
-            index -= 1
-
-        return "kein_TOPIC"
+        return top_result, topic_result        
 
     def parse_sitzung(self, response):
         ''' Function to parse all PDFs of a single Sitzung.
@@ -63,7 +47,7 @@ class BochumSpider(RisseSpider):
                 if pdfs[i].split('&')[0] in trs[j].get():
                     break; 
 
-            top, topic = self.extract_top(j, trs), self.extract_topic(j, trs)
+            top, topic = self.find_top_and_topic(j, trs)
             full_path = response.meta['path'] + [top, topic]
             self.create_directories(os.path.join(*full_path))
 
