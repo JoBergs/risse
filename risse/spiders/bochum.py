@@ -9,6 +9,12 @@ class BochumSpider(RisseSpider):
     name = "bochum"
 
     def find_top_and_topic(self, index, trs):
+        """ Since since a TOP can span multiple rows, it's necessary to search
+         for the right TOP and topic for every Vorlage. This function iterates up
+        in the list or rows (trs) until it finds a row with a TOP and a topic and 
+        returns them. If no TOP or topic is found, 'kein_TOP' resp. "kein_TOPIC"
+        is returned. """
+
         top_result = "kein_TOP" 
         topic_result = "kein_TOPIC" 
 
@@ -134,8 +140,6 @@ class BochumSpider(RisseSpider):
         names = [self.mapping[name] if name in self.mapping else name for name in names]
 
         for i in range(len(urls)):
-            # TESTING!
-            if names[i] == "Bezirksvertretung Bochum-Mitte":
                 request = self.build_request(response.urljoin(urls[i]), self.parse_gremium, '')
                 request.meta['name'] = names[i]
 
