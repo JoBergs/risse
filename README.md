@@ -63,14 +63,16 @@ scrapy crawl dortmund -a stadt=Dortmund -a url=https://dosys01.digistadtdo.de/do
 
 ### Bochum
 Scraper:
-Main page -> "Gremien" -> GremiumName -> Sitzungen -> if date fits: scrape Einladung, Niederschrift
--> Sitzung -> Scrape all PDFs (with their topic and TOP)
+Main page -> "Gremien" -> GremiumName -> Sitzungen -> if date fits: scrape Einladung, Niederschrift,  Sitzung -> Scrape all Sitzung PDFs (with their topic and TOP)
 
 ```
 scrapy crawl bochum -a stadt=Bochum -a url=https://session.bochum.de/bi/infobi.asp -a root=test -a year=2018 -a month=3 -a overwrite=True
 ```
 
 ### Mülheim
+Scraper:
+Main page -> "Kalender" -> ASP requests for Sitzungen for fitting months -> Sitzung -> Niederschrift, Topics -> for each topic Beratungsverlauf, Anlagen, Vorlagen ->  all Anlagen for each Vorlage
+
 ```
 scrapy crawl muelheim -a stadt=Mülheim -a url=https://ratsinfo.muelheim-ruhr.de/buerger/allris.net.asp -a root=test -a year=2018 -a month=3 -a overwrite=True
 ```

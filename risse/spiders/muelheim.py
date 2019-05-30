@@ -8,8 +8,8 @@ class MuelheimSpider(RisseSpider):
     all_years = range(1998, datetime.datetime.now().year + 1)
  
     def parse_vorlage(self, response): 
-        """ A Vorlage can have seperate Anlagen as well.
-        Herein, the Vorlage and all Anlagen are extracted. """
+        """ Herein, all Anlagen or a Vorlage are extracted. 
+        Site: https://ratsinfo.muelheim-ruhr.de/buerger/vo020.asp?VOLFDNR=20431"""
 
         # e.g. <input type="hidden" name="DOLFDNR" value="563803">
         dolfdnrs = response.xpath('//input[contains(@name, "DOLFDNR")]')
@@ -47,7 +47,8 @@ class MuelheimSpider(RisseSpider):
     def parse_beratungsverlauf(self, response):  
         """Try to parse the HTML Beratungsverlauf and store it in a file.
         If there are non-transferable special characters in that file, save a 
-        warning instead. """
+        warning instead. 
+        Site: https://ratsinfo.muelheim-ruhr.de/buerger/to020.asp?TOLFDNR=89848"""
 
         try:
             beratungsverlauf = response.xpath('//span[text()="Beratungsverlauf:"]/parent::node()/parent::node()').get()
@@ -60,7 +61,8 @@ class MuelheimSpider(RisseSpider):
 
     def parse_beschluss(self, response):
         """ For every topic, the related Beschluss with its Beratungsverlauf (HTML),
-        Vorlage and Anlagen has to be parsed. """
+        Vorlage and Anlagen has to be parsed. 
+        Site: https://ratsinfo.muelheim-ruhr.de/buerger/to020.asp?TOLFDNR=89835"""
 
         self.create_directories(response.meta['path'])
 
@@ -94,7 +96,8 @@ class MuelheimSpider(RisseSpider):
 
     def parse_sitzung(self, response):
         """A Sitzung contains a Niederschrift and various Topics that have to be
-        scraped. The required requests are build herein. """
+        scraped. The required requests are build herein. 
+        Site: https://ratsinfo.muelheim-ruhr.de/buerger/to010.asp?SILFDNR=11630"""
 
         # e.g. <a href="au020.asp?T1=Gremium&amp;history=switch&amp;tsDD=10&amp;tsMM=4&amp;tsYYYY=2018&amp;AULFDNR=25&amp;altoption=Gremium">Bezirksvertretung 3</a>
         name = response.xpath('//a[contains(@href, "au020.asp")]/text()').get()
@@ -156,7 +159,8 @@ class MuelheimSpider(RisseSpider):
                  
     def parse_year(self, response):
         ''' Herein, a specific year or the month of a specific year is parsed. 
-        All IDs of Sitzungen are extracted and .asp form request for each ID are executed. '''
+        All IDs of Sitzungen are extracted and .asp form request for each ID are executed. 
+        Site: https://ratsinfo.muelheim-ruhr.de/buerger/si010_j.asp'''
 
         # e.g. <a href="to010.asp?SILFDNR=11630">Sitzung der Bezirksvertretung 3</a>
         ids = response.xpath('//a').re(r'"to010.asp\?SILFDNR=(\S*)"')
@@ -170,7 +174,8 @@ class MuelheimSpider(RisseSpider):
         ''' Muelheim supports an .asp calender that retrieves Sitzungen.
         This function requests all Sitzungen that happened between
         from_day and to_day either for the year passed as CLI argument
-        or for all years that have Sizungen. '''
+        or for all years that have Sizungen. 
+        Site: https://ratsinfo.muelheim-ruhr.de/buerger/si010_j.asp'''
 
         if self.year:  # if year was passed as a parameter, scrape only that year
             self.all_years = [self.year]
@@ -184,7 +189,8 @@ class MuelheimSpider(RisseSpider):
 
     def parse(self, response):
         """ Find the URL that links to the calender from the Mülheim
-        main page and form a request. """
+        main page and form a request.
+        Site: https://ratsinfo.muelheim-ruhr.de/buerger/allris.net.asp """
 
         url = response.xpath('//a[contains(@href, "si010_j.asp")]/@href').get()
         yield self.build_request(response.urljoin(url), self.parse_calender, '')  
