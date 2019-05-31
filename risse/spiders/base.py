@@ -52,6 +52,7 @@ class RisseSpider(scrapy.Spider):
             os.makedirs(path) 
 
     # checkout if i can move urljoin in here!
+    # it would be better to accept a dict of kwargs
     def build_request(self, url, fct, path, data=None):
         if data:
             request = scrapy.FormRequest(url, formdata=data, callback=fct)

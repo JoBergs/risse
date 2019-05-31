@@ -4,7 +4,7 @@ from risse.spiders.base import *
 
 # "Integrationsrat" is not being parsed???
 
-# first run: 113.9 MB
+# first run: 113.9 MB; second run 140.9Mb and not finished?
 
 class DortmundSpider(RisseSpider):
     name = "dortmund"
@@ -76,8 +76,10 @@ class DortmundSpider(RisseSpider):
 
         for i in range(len(links)):
             if "Tagesordnung" not in links[i].get():
-                request = scrapy.Request(response.urljoin(links[i].attrib['href']),
-                                         callback=self.parse_niederschrift)
+                # request = scrapy.Request(response.urljoin(links[i].attrib['href']),
+                #                          callback=self.parse_niederschrift)
+                request = self.build_request(response.urljoin(links[i].attrib['href']), 
+                    self.parse_niederschrift, '')
 
                 # parse name of current committee if available
                 tmp = response.xpath('//img[contains(@alt, "Details verbergen für")]')
@@ -92,16 +94,23 @@ class DortmundSpider(RisseSpider):
                 if name == "Hauptausschuss und Ältestenrat":
                     yield request
 
+        yield self.next_gremium(response, name)
 
+    def next_gremium(self, response, name):
+        """ Function to parse the next Gremium on the next page.
+        Site: https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView&ExpandView """
+
+        # TESTING
         if name == "Ausschuss für Bauen, Verkehr und Grün":
-                return
+            return
+        # e.g. '<a href="/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView&amp;Start=1.29&amp;ExpandView"><b><font size="2" color="#000080" face="Arial">&gt;&gt;</font></b></a>'
         next_page = response.xpath('//*[.=">>"]/parent::*/a') 
         if next_page is not None:
-            next_page = response.urljoin(next_page.attrib['href'])
-            request = scrapy.Request(next_page, callback=self.parse_gremien)
+            request = self.build_request(response.urljoin(next_page.attrib['href']), 
+                self.parse_gremien, '')
             request.meta['name'] = name
 
-            yield request
+            return request
 
     def parse(self, response):
         """ Find the URL that opens the detailed view of all Gremien and form a request.
