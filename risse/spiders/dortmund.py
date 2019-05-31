@@ -34,7 +34,7 @@ class DortmundSpider(RisseSpider):
         except:
             pass
 
-    def parse_niederschrift(self, response):
+    def parse_sitzung(self, response):
         name = response.meta['name']
 
         # move this into base class
@@ -66,22 +66,37 @@ class DortmundSpider(RisseSpider):
                 yield request
 
     def parse_gremien(self, response):
+        """ Function to parse all Gremien on all pages.
+        Site: https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView&ExpandView """
+
+        # e.g. <a href="/dosys/gremniedweb1.nsf/034bc6e876399f96c1256e1d0035a1e9/764a822ae6adae29c125840700252a09?OpenDocument"><b><script language="JavaScript">\nfunction NeuFenster764A822AE6ADAE29C125840700252A09()\n{\nMeinFenster =\n window.open("dosys\\gremniedweb1.nsf/NiederschriftenWeb/764A822AE6ADAE29C125840700252A09?OpenDocument", "Zweitfenster", "width=800,height=600,toolbar=no,userbar=no,location=no,status=no,menubar=no,scrollbars,offsetX=5,offsetY=5 ");\n MeinFenster.focus();\n}\n</script>\n<a href="javascript:NeuFenster764A822AE6ADAE29C125840700252A09()">Festgestellte Tagesordnung (öffentlich), 23.05.2019</a></b> <br></a>
         links = response.xpath('//a[contains(@href, "OpenDocument")]')
+        # e.g. <a href="javascript:NeuFenster764A822AE6ADAE29C125840700252A09()">Festgestellte Tagesordnung (öffentlich), 23.05.2019</a>
         dates = links.xpath('//a[contains(@href, "javascript")]/text()').getall() 
 
-        name = None
+        # name = None
 
-        if 'name' in response.meta.keys():
-            name = response.meta['name']
+        # if 'name' in response.meta.keys():
+        #     name = response.meta['name']
+
+        name = response.meta.get('name', None)
+
+        for request in self.parse_gremium(response, name, links, dates):
+            yield request
+
+        yield self.parse_next_gremium(response, name)
+
+    def parse_gremium(self, response, name, links, dates):
+        """ Function to make a request for parsing every Sitzung of the current Gremium.
+        Site: https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView&ExpandView """
+        requests = []
 
         for i in range(len(links)):
             if "Tagesordnung" not in links[i].get():
-                # request = scrapy.Request(response.urljoin(links[i].attrib['href']),
-                #                          callback=self.parse_niederschrift)
                 request = self.build_request(response.urljoin(links[i].attrib['href']), 
-                    self.parse_niederschrift, '')
+                    self.parse_sitzung, '')
 
-                # parse name of current committee if available
+                # e.g. <img src="/dosys/gremniedweb1.nsf/%24PlusMinus?OpenImageResource&amp;ImgIndex=1" border="0" alt="Details verbergen für Rat der Stadt">
                 tmp = response.xpath('//img[contains(@alt, "Details verbergen für")]')
                 if tmp != []:
                     name = tmp.attrib['alt'].lstrip("Details verbergen für")
@@ -92,12 +107,12 @@ class DortmundSpider(RisseSpider):
                 # TESTING
                 print(name)
                 if name == "Hauptausschuss und Ältestenrat":
-                    yield request
+                    requests.append(request)
 
-        yield self.next_gremium(response, name)
+        return requests
 
-    def next_gremium(self, response, name):
-        """ Function to parse the next Gremium on the next page.
+    def parse_next_gremium(self, response, name):
+        """ Function to make a request for parsing the next Gremium on the next page.
         Site: https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView&ExpandView """
 
         # TESTING
