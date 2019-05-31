@@ -51,6 +51,7 @@ class RisseSpider(scrapy.Spider):
         if not os.path.isdir(path):
             os.makedirs(path) 
 
+    # checkout if i can move urljoin in here!
     def build_request(self, url, fct, path, data=None):
         if data:
             request = scrapy.FormRequest(url, formdata=data, callback=fct)

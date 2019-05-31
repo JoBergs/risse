@@ -2,6 +2,9 @@
 
 from risse.spiders.base import *
 
+# "Integrationsrat" is not being parsed???
+
+# first run: 113.9 MB
 
 class DortmundSpider(RisseSpider):
     name = "dortmund"
@@ -33,6 +36,8 @@ class DortmundSpider(RisseSpider):
 
     def parse_niederschrift(self, response):
         name = response.meta['name']
+
+        # move this into base class
         if name in self.mapping:
             name = self.mapping[name]
         date = response.meta['date'].split('.')
@@ -81,9 +86,15 @@ class DortmundSpider(RisseSpider):
 
                 request.meta['name'] = name
                 request.meta['date'] = dates[i].lstrip("Niederschrift (öffentlich), ")
+                
+                # TESTING
+                print(name)
+                if name == "Hauptausschuss und Ältestenrat":
+                    yield request
 
-                yield request
 
+        if name == "Ausschuss für Bauen, Verkehr und Grün":
+                return
         next_page = response.xpath('//*[.=">>"]/parent::*/a') 
         if next_page is not None:
             next_page = response.urljoin(next_page.attrib['href'])
@@ -93,4 +104,8 @@ class DortmundSpider(RisseSpider):
             yield request
 
     def parse(self, response):
-        yield scrapy.Request(response.urljoin('/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView&ExpandView'), callback=self.parse_gremien)
+        """ Find the URL that opens the detailed view of all Gremien and form a request.
+        Site: https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView """
+
+        url = '/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView&ExpandView'
+        yield self.build_request(response.urljoin(url), self.parse_gremien, '')

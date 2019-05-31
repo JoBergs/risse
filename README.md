@@ -17,6 +17,8 @@ Scraper to scrape PDFs from german Ratsinformationssysteme (Risse).
 * extend for more scrapers
 * great would be if every function has an url in the docstring which site it works on
 * also add some kind of flow diagram how each scraper scrapes here
+* Dortmund Integrationsrat is not being parsed!
+* add DEBUG variable for only parsing a specific Gremium for testing purposes
 
 ## Installation (Linux)
 Enter in the terminal
@@ -57,6 +59,8 @@ scrapy crawl SPIDERNAME -a stadt=CITY -a url=URL -a root=RESULTPATH -a year=YEAR
 ```
 
 ### Dortmund
+Scraper:
+Main Page -> extend all Gremien -> Gremium (one per page) -> Sitzungen
 ```
 scrapy crawl dortmund -a stadt=Dortmund -a url=https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView -a root=test -a year=2018 -a month=3 -a overwrite=True
 ```
