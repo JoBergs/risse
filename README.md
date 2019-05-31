@@ -5,8 +5,8 @@ Scraper to scrape PDFs from german Ratsinformationssysteme (Risse).
 ## TODO
 
 * ~~git/GitHub versioning~~
-* docstrings
-* refactor general structure
+* ~~docstrings~~
+* ~~refactor general structure~~
 * ~~markup readme~~
 * software tests
 * fix schaltjahre
@@ -15,9 +15,9 @@ Scraper to scrape PDFs from german Ratsinformationssysteme (Risse).
 * starter script (configuration file???)
 * IBM cloud API interface
 * extend for more scrapers
-* url in docstrings for which site it works on
-* flow diagram how each scraper scrapes
-* Dortmund Integrationsrat is not being parsed!
+* ~~url in docstrings for which site it works on~~
+* ~~flow diagram how each scraper scrapes~~
+* Dortmund Integrationsrat and many other (including archiv) are not being parsed!
 * add DEBUG variable for only parsing a specific Gremium for testing purposes
 
 ## Installation (Linux)
