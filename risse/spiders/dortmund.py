@@ -14,9 +14,11 @@ class DortmundSpider(RisseSpider):
         links = response.xpath('//a[contains(@href, "pdf?OpenElement")]')
 
         for i in range(len(links)):
-            request = scrapy.Request(response.urljoin(links[i].attrib['href']),
-                callback=self.save_pdf)
-            request.meta['path'] = os.path.join(response.meta['path'], links[i].attrib['href'].split('/')[-1].rstrip('?OpenElement'))
+            # request = scrapy.Request(response.urljoin(links[i].attrib['href']),
+            #     callback=self.save_pdf)
+            request = self.build_request(response.urljoin(links[i].attrib['href']), self.save_pdf, 
+                os.path.join(response.meta['path'], links[i].attrib['href'].split('/')[-1].rstrip('?OpenElement')))
+            # request.meta['path'] = os.path.join(response.meta['path'], links[i].attrib['href'].split('/')[-1].rstrip('?OpenElement'))
 
             yield request
 
@@ -31,8 +33,10 @@ class DortmundSpider(RisseSpider):
             # e.g. <iframe src="https://dosys01.digistadtdo.de/dosys/gremrech.nsf/(embAttOrg)?OpenView&amp;RestrictToCategory=C1256F35004CEDB0C12582580023CA24" height="250" width="600" name="unterfenster" marginheight="0" marginwidth="0" frameborder="0">Alternativtext</iframe>
             iframe = response.xpath('//iframe').attrib["src"]
 
-            request = scrapy.Request(iframe, callback=self.parse_iframe)
-            request.meta['path'] = os.path.join(*response.meta['path'], response.meta['id'])
+            # request = scrapy.Request(iframe, callback=self.parse_iframe)
+            request = self.build_request(iframe, self.parse_iframe, 
+                os.path.join(*response.meta['path'], response.meta['id']))
+            # request.meta['path'] = os.path.join(*response.meta['path'], response.meta['id'])
 
             yield request
         except:
@@ -73,9 +77,10 @@ class DortmundSpider(RisseSpider):
         ids = response.xpath('//font/text()').re(r'\(Drucksache Nr.: (\S*)\)')
 
         for drucksache in ids:
-            request = scrapy.Request(base_url + drucksache,
-                callback=self.parse_drucksache)
-            request.meta['path'] = path
+            # request = scrapy.Request(base_url + drucksache,
+            #     callback=self.parse_drucksache)
+            request = self.build_request(base_url + drucksache, self.parse_drucksache, path)
+            # request.meta['path'] = path
             request.meta['id'] = drucksache
 
             requests.append(request)
