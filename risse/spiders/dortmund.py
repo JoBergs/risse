@@ -2,17 +2,17 @@
 
 from risse.spiders.base import *
 
-# "Integrationsrat" is not being parsed???
-
-# first run: 113.9 MB; second run 140.9Mb and not finished?
 
 class DortmundSpider(RisseSpider):
     name = "dortmund"
 
     def parse_iframe(self, response):
+        """ Parse the site for URLs to Anlagen and form requests for them.
+        Site: https://dosys01.digistadtdo.de/dosys/gremrech.nsf/(embAttOrg)?OpenView&RestrictToCategory=C1256F35004CEDB0C12582580023CA24"""
+
+        # e.g. <a href="https://dosys01.digistadtdo.de/dosys/gremrech.nsf/(embAttOrg)/98540772714EEE7DC125825800281C7E/%24FILE/EA%20zu%20TOP%2010.4.pdf?OpenElement" target="_blank">EA zu TOP 10.4.pdf</a>
         links = response.xpath('//a[contains(@href, "pdf?OpenElement")]')
 
-        # THIS SHOULD BE A FUNCTION!!! a lot of stuff can be fused with this in the base class!
         for i in range(len(links)):
             request = scrapy.Request(response.urljoin(links[i].attrib['href']),
                 callback=self.save_pdf)
@@ -21,12 +21,14 @@ class DortmundSpider(RisseSpider):
             yield request
 
     def parse_drucksache(self, response):
-        import ipdb
-        ipdb.set_trace()
+        """ Check if a Drucksache has a link to Anlangen. If so, form a request for it.
+        Site: https://dosys01.digistadtdo.de/dosys/gremrech.nsf/TOPWEB/09848-18-E1"""
+
         self.create_directories(os.path.join(*response.meta['path'], response.meta['id']))
 
         # not all Drucksachen have attachments
         try:
+            # e.g. <iframe src="https://dosys01.digistadtdo.de/dosys/gremrech.nsf/(embAttOrg)?OpenView&amp;RestrictToCategory=C1256F35004CEDB0C12582580023CA24" height="250" width="600" name="unterfenster" marginheight="0" marginwidth="0" frameborder="0">Alternativtext</iframe>
             iframe = response.xpath('//iframe').attrib["src"]
 
             request = scrapy.Request(iframe, callback=self.parse_iframe)
@@ -78,7 +80,7 @@ class DortmundSpider(RisseSpider):
 
             requests.append(request)
 
-        return request
+        return requests
 
     def parse_gremien(self, response):
         """ Function to parse all Gremien on all pages.

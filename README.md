@@ -15,8 +15,8 @@ Scraper to scrape PDFs from german Ratsinformationssysteme (Risse).
 * starter script (configuration file???)
 * IBM cloud API interface
 * extend for more scrapers
-* great would be if every function has an url in the docstring which site it works on
-* also add some kind of flow diagram how each scraper scrapes here
+* url in docstrings for which site it works on
+* flow diagram how each scraper scrapes
 * Dortmund Integrationsrat is not being parsed!
 * add DEBUG variable for only parsing a specific Gremium for testing purposes
 
