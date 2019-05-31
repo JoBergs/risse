@@ -21,6 +21,8 @@ class DortmundSpider(RisseSpider):
             yield request
 
     def parse_drucksache(self, response):
+        import ipdb
+        ipdb.set_trace()
         self.create_directories(os.path.join(*response.meta['path'], response.meta['id']))
 
         # not all Drucksachen have attachments
@@ -35,35 +37,48 @@ class DortmundSpider(RisseSpider):
             pass
 
     def parse_sitzung(self, response):
-        name = response.meta['name']
+        """ Check if a Sitzung fits in the CLI data range. If so, store its HTML and
+        generate requests for all Anlagen.
+        Site: https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/034bc6e876399f96c1256e1d0035a1e9/c1256a150047cd47c1256b7a00291f6d?OpenDocument """
 
         # move this into base class
-        if name in self.mapping:
-            name = self.mapping[name]
+        name = self.mapping.get(response.meta['name'], response.meta['name'])
         date = response.meta['date'].split('.')
 
-        # check for command line arguments year and or date
-        if (self.year == None or date[-1] == self.year) and \
-            (self.month == None or date[1].lstrip('0') == self.month):
+        # move into base class in all scrapers
+        if (self.month == None or date[1].lstrip('0') == self.month) and \
+                (self.year == None or date[-1] == self.year):
 
             # /root-path-for-documents/2019/name-of-commitee/2019-03-28/Number-of-Topic/
             path = [self.root, date[-1], name, '-'.join(date[::-1])]
 
             self.create_directories(os.path.join(*path))
 
+            # store the text of the Sitzung
             self.save_file(os.path.join(*path, name + '.html'), response.text, True) 
 
-            ids = response.xpath('//font/text()').re(r'\(Drucksache Nr.: (\S*)\)')
-
-            base_url = 'https://dosys01.digistadtdo.de/dosys/gremrech.nsf/TOPWEB/'
-
-            for drucksache in ids:
-                request = scrapy.Request(base_url + drucksache,
-                    callback=self.parse_drucksache)
-                request.meta['path'] = path
-                request.meta['id'] = drucksache
-
+            for request in self.build_drucksache_requests(response, path):
                 yield request
+
+    def build_drucksache_requests(self, response, path):
+        """ Scan a Sitzung for Drucksachen and build requests for them.
+        Site: https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/034bc6e876399f96c1256e1d0035a1e9/e0904ca267a306b1c125829c003fb320?OpenDocument"""
+
+        requests = []
+
+        base_url = 'https://dosys01.digistadtdo.de/dosys/gremrech.nsf/TOPWEB/'
+        # e.g. <font size="2" face="Arial">\t(Drucksache Nr.: 10033-18)  </font>
+        ids = response.xpath('//font/text()').re(r'\(Drucksache Nr.: (\S*)\)')
+
+        for drucksache in ids:
+            request = scrapy.Request(base_url + drucksache,
+                callback=self.parse_drucksache)
+            request.meta['path'] = path
+            request.meta['id'] = drucksache
+
+            requests.append(request)
+
+        return request
 
     def parse_gremien(self, response):
         """ Function to parse all Gremien on all pages.
@@ -73,11 +88,6 @@ class DortmundSpider(RisseSpider):
         links = response.xpath('//a[contains(@href, "OpenDocument")]')
         # e.g. <a href="javascript:NeuFenster764A822AE6ADAE29C125840700252A09()">Festgestellte Tagesordnung (öffentlich), 23.05.2019</a>
         dates = links.xpath('//a[contains(@href, "javascript")]/text()').getall() 
-
-        # name = None
-
-        # if 'name' in response.meta.keys():
-        #     name = response.meta['name']
 
         name = response.meta.get('name', None)
 
@@ -103,21 +113,15 @@ class DortmundSpider(RisseSpider):
 
                 request.meta['name'] = name
                 request.meta['date'] = dates[i].lstrip("Niederschrift (öffentlich), ")
-                
-                # TESTING
-                print(name)
-                if name == "Hauptausschuss und Ältestenrat":
-                    requests.append(request)
+
+                requests.append(request)
 
         return requests
 
     def parse_next_gremium(self, response, name):
-        """ Function to make a request for parsing the next Gremium on the next page.
+        """ Function to make a request for parsing the next page.
         Site: https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView&ExpandView """
 
-        # TESTING
-        if name == "Ausschuss für Bauen, Verkehr und Grün":
-            return
         # e.g. '<a href="/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView&amp;Start=1.29&amp;ExpandView"><b><font size="2" color="#000080" face="Arial">&gt;&gt;</font></b></a>'
         next_page = response.xpath('//*[.=">>"]/parent::*/a') 
         if next_page is not None:
