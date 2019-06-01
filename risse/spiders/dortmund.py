@@ -76,6 +76,13 @@ class DortmundSpider(RisseSpider):
         """ Scan a Sitzung for Drucksachen and build requests for them.
         Site: https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/034bc6e876399f96c1256e1d0035a1e9/e0904ca267a306b1c125829c003fb320?OpenDocument"""
 
+        # import ipdb
+        # ipdb.set_trace()
+
+        # ok so this doesn't help since the name in the niederschrift is gramatically different
+
+        name = response.xpath('//p/b/font/text()')[0].get().split("Sitzung des ")[-1]
+
         requests = []
 
         base_url = 'https://dosys01.digistadtdo.de/dosys/gremrech.nsf/TOPWEB/'
