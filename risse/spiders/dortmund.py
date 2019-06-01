@@ -14,11 +14,8 @@ class DortmundSpider(RisseSpider):
         links = response.xpath('//a[contains(@href, "pdf?OpenElement")]')
 
         for i in range(len(links)):
-            # request = scrapy.Request(response.urljoin(links[i].attrib['href']),
-            #     callback=self.save_pdf)
             request = self.build_request(response.urljoin(links[i].attrib['href']), self.save_pdf, 
                 os.path.join(response.meta['path'], links[i].attrib['href'].split('/')[-1].rstrip('?OpenElement')))
-            # request.meta['path'] = os.path.join(response.meta['path'], links[i].attrib['href'].split('/')[-1].rstrip('?OpenElement'))
 
             yield request
 
@@ -77,10 +74,7 @@ class DortmundSpider(RisseSpider):
         ids = response.xpath('//font/text()').re(r'\(Drucksache Nr.: (\S*)\)')
 
         for drucksache in ids:
-            # request = scrapy.Request(base_url + drucksache,
-            #     callback=self.parse_drucksache)
             request = self.build_request(base_url + drucksache, self.parse_drucksache, path)
-            # request.meta['path'] = path
             request.meta['id'] = drucksache
 
             requests.append(request)
@@ -101,7 +95,7 @@ class DortmundSpider(RisseSpider):
         for request in self.parse_gremium(response, name, links, dates):
             yield request
 
-        yield self.parse_next_gremium(response, name)
+        yield self.parse_next_page(response, name)
 
     def parse_gremium(self, response, name, links, dates):
         """ Function to make a request for parsing every Sitzung of the current Gremium.
@@ -125,7 +119,7 @@ class DortmundSpider(RisseSpider):
 
         return requests
 
-    def parse_next_gremium(self, response, name):
+    def parse_next_page(self, response, name):
         """ Function to make a request for parsing the next page.
         Site: https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView&ExpandView """
 
