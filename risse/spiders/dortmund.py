@@ -44,9 +44,18 @@ class DortmundSpider(RisseSpider):
         generate requests for all Anlagen.
         Site: https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/034bc6e876399f96c1256e1d0035a1e9/c1256a150047cd47c1256b7a00291f6d?OpenDocument """
 
+
         # move this into base class
         name = self.mapping.get(response.meta['name'], response.meta['name'])
         date = response.meta['date'].split('.')
+
+
+        # if "Hauptausschuss und Ältestenrat" in response.meta['name']:
+        #     print(date)
+        #     print((self.month == None or date[1].lstrip('0') == self.month) and \
+        #         (self.year == None or date[-1] == self.year))
+        #     import ipdb
+        #     ipdb.set_trace()
 
         # move into base class in all scrapers
         if (self.month == None or date[1].lstrip('0') == self.month) and \
@@ -102,6 +111,12 @@ class DortmundSpider(RisseSpider):
         Site: https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView&ExpandView """
         requests = []
 
+        # this function does not do what it should
+        #   e.g.: what happens if there are two Details verbergen images on one page
+        #   also, the name doesn't need to be calculated frequently, once is enough
+        #   i might need a different control logic
+        #   like, name found? if so, iterate over pages until the next name is found
+
         for i in range(len(links)):
             if "Tagesordnung" not in links[i].get():
                 request = self.build_request(response.urljoin(links[i].attrib['href']), 
@@ -111,6 +126,12 @@ class DortmundSpider(RisseSpider):
                 tmp = response.xpath('//img[contains(@alt, "Details verbergen für")]')
                 if tmp != []:
                     name = tmp.attrib['alt'].lstrip("Details verbergen für")
+
+                # try:
+                #     print(response.xpath('//img[contains(@alt, "Details verbergen für")]').get())
+                #     print(name)
+                # except:
+                #     pass
 
                 request.meta['name'] = name
                 request.meta['date'] = dates[i].lstrip("Niederschrift (öffentlich), ")
