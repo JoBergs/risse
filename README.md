@@ -17,7 +17,8 @@ Scraper to scrape PDFs from german Ratsinformationssysteme (Risse).
 * extend for more scrapers
 * ~~url in docstrings for which site it works on~~
 * ~~flow diagram how each scraper scrapes~~
-* Dortmund Integrationsrat and many other (including archiv) are not being parsed!
+* ~~Dortmund Integrationsrat and many other are not being scraped!~~
+* Scrape Dortmund Archiv as well???
 * add DEBUG variable for only parsing a specific Gremium for testing purposes
 
 ## Installation (Linux)

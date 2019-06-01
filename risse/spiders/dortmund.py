@@ -2,6 +2,8 @@
 
 from risse.spiders.base import *
 
+DATA = './data.txt'
+
 
 class DortmundSpider(RisseSpider):
     name = "dortmund"
@@ -14,8 +16,11 @@ class DortmundSpider(RisseSpider):
         links = response.xpath('//a[contains(@href, "pdf?OpenElement")]')
 
         for i in range(len(links)):
+            # request = scrapy.Request(response.urljoin(links[i].attrib['href']),
+            #     callback=self.save_pdf)
             request = self.build_request(response.urljoin(links[i].attrib['href']), self.save_pdf, 
                 os.path.join(response.meta['path'], links[i].attrib['href'].split('/')[-1].rstrip('?OpenElement')))
+            # request.meta['path'] = os.path.join(response.meta['path'], links[i].attrib['href'].split('/')[-1].rstrip('?OpenElement'))
 
             yield request
 
@@ -39,49 +44,31 @@ class DortmundSpider(RisseSpider):
         except:
             pass
 
-    def parse_sitzung(self, response):
+    def parse_niederschrift(self, response):
         """ Check if a Sitzung fits in the CLI data range. If so, store its HTML and
         generate requests for all Anlagen.
         Site: https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/034bc6e876399f96c1256e1d0035a1e9/c1256a150047cd47c1256b7a00291f6d?OpenDocument """
 
+        print('in parse niederschrift')
 
         # move this into base class
         name = self.mapping.get(response.meta['name'], response.meta['name'])
         date = response.meta['date'].split('.')
 
+        # /root-path-for-documents/2019/name-of-commitee/2019-03-28/Number-of-Topic/
+        path = [self.root, date[-1], name, '-'.join(date[::-1])]
 
-        # if "Hauptausschuss und Ältestenrat" in response.meta['name']:
-        #     print(date)
-        #     print((self.month == None or date[1].lstrip('0') == self.month) and \
-        #         (self.year == None or date[-1] == self.year))
-        #     import ipdb
-        #     ipdb.set_trace()
+        self.create_directories(os.path.join(*path))
 
-        # move into base class in all scrapers
-        if (self.month == None or date[1].lstrip('0') == self.month) and \
-                (self.year == None or date[-1] == self.year):
+        # store the text of the Sitzung
+        self.save_file(os.path.join(*path, name + '.html'), response.text, True) 
 
-            # /root-path-for-documents/2019/name-of-commitee/2019-03-28/Number-of-Topic/
-            path = [self.root, date[-1], name, '-'.join(date[::-1])]
-
-            self.create_directories(os.path.join(*path))
-
-            # store the text of the Sitzung
-            self.save_file(os.path.join(*path, name + '.html'), response.text, True) 
-
-            for request in self.build_drucksache_requests(response, path):
-                yield request
+        for request in self.build_drucksache_requests(response, path):
+            yield request
 
     def build_drucksache_requests(self, response, path):
         """ Scan a Sitzung for Drucksachen and build requests for them.
         Site: https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/034bc6e876399f96c1256e1d0035a1e9/e0904ca267a306b1c125829c003fb320?OpenDocument"""
-
-        # import ipdb
-        # ipdb.set_trace()
-
-        # ok so this doesn't help since the name in the niederschrift is gramatically different
-
-        name = response.xpath('//p/b/font/text()')[0].get().split("Sitzung des ")[-1]
 
         requests = []
 
@@ -97,72 +84,65 @@ class DortmundSpider(RisseSpider):
 
         return requests
 
-    def parse_gremien(self, response):
-        """ Function to parse all Gremien on all pages.
-        Site: https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView&ExpandView """
-
-        # e.g. <a href="/dosys/gremniedweb1.nsf/034bc6e876399f96c1256e1d0035a1e9/764a822ae6adae29c125840700252a09?OpenDocument"><b><script language="JavaScript">\nfunction NeuFenster764A822AE6ADAE29C125840700252A09()\n{\nMeinFenster =\n window.open("dosys\\gremniedweb1.nsf/NiederschriftenWeb/764A822AE6ADAE29C125840700252A09?OpenDocument", "Zweitfenster", "width=800,height=600,toolbar=no,userbar=no,location=no,status=no,menubar=no,scrollbars,offsetX=5,offsetY=5 ");\n MeinFenster.focus();\n}\n</script>\n<a href="javascript:NeuFenster764A822AE6ADAE29C125840700252A09()">Festgestellte Tagesordnung (öffentlich), 23.05.2019</a></b> <br></a>
-        links = response.xpath('//a[contains(@href, "OpenDocument")]')
-        # e.g. <a href="javascript:NeuFenster764A822AE6ADAE29C125840700252A09()">Festgestellte Tagesordnung (öffentlich), 23.05.2019</a>
-        dates = links.xpath('//a[contains(@href, "javascript")]/text()').getall() 
-
-        name = response.meta.get('name', None)
-
-        for request in self.parse_gremium(response, name, links, dates):
-            yield request
-
-        yield self.parse_next_page(response, name)
-
-    def parse_gremium(self, response, name, links, dates):
-        """ Function to make a request for parsing every Sitzung of the current Gremium.
-        Site: https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView&ExpandView """
+    def generate_niederschrift_requests(self, response, data):
         requests = []
 
-        # this function does not do what it should
-        #   e.g.: what happens if there are two Details verbergen images on one page
-        #   also, the name doesn't need to be calculated frequently, once is enough
-        #   i might need a different control logic
-        #   like, name found? if so, iterate over pages until the next name is found
-
-        for i in range(len(links)):
-            if "Tagesordnung" not in links[i].get():
-                request = self.build_request(response.urljoin(links[i].attrib['href']), 
-                    self.parse_sitzung, '')
-
-                # e.g. <img src="/dosys/gremniedweb1.nsf/%24PlusMinus?OpenImageResource&amp;ImgIndex=1" border="0" alt="Details verbergen für Rat der Stadt">
-                tmp = response.xpath('//img[contains(@alt, "Details verbergen für")]')
-                if tmp != []:
-                    name = tmp.attrib['alt'].lstrip("Details verbergen für")
-
-                # try:
-                #     print(response.xpath('//img[contains(@alt, "Details verbergen für")]').get())
-                #     print(name)
-                # except:
-                #     pass
-
+        for niederschriften in data:
+            name = niederschriften[0]
+            for niederschrift in niederschriften[1]:
+                request = self.build_request(response.urljoin(niederschrift[1]), 
+                    self.parse_niederschrift, '')
                 request.meta['name'] = name
-                request.meta['date'] = dates[i].lstrip("Niederschrift (öffentlich), ")
+                request.meta['date'] = niederschrift[0]
 
                 requests.append(request)
 
         return requests
 
-    def parse_next_page(self, response, name):
-        """ Function to make a request for parsing the next page.
-        Site: https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView&ExpandView """
+    def parse_page(self, response):
+        data  = self.extract_page_data(response)
 
-        # e.g. '<a href="/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView&amp;Start=1.29&amp;ExpandView"><b><font size="2" color="#000080" face="Arial">&gt;&gt;</font></b></a>'
+        for request in self.generate_niederschrift_requests(response, data):
+            yield request
+
         next_page = response.xpath('//*[.=">>"]/parent::*/a') 
         if next_page is not None:
             request = self.build_request(response.urljoin(next_page.attrib['href']), 
-                self.parse_gremien, '')
-            request.meta['name'] = name
+                self.parse_page, '')
+            request.meta['name'] = data[-1][0]
 
-            return request
+            yield request   
+
+    def extract_page_data(self, response):
+        # format: (name,[(url, date), ...])
+        data = [(response.meta['name'], [])]
+        rows = response.xpath('//tr/td/font | //tr/td/a/img').getall()
+
+        for row in rows:
+            if "Details verbergen für" in row:
+                name = row.split("Details verbergen für ")[-1].split('"')[0]
+                if name != data[-1][0]:
+                    data.append((name, []))
+            elif "Niederschrift (öffentlich)" in row:
+                date = row.split("Niederschrift (öffentlich), ")[-1].split('<')[0]
+                url = row.split('<font size="2"><a href="')[-1].split('"')[0]
+                day, month, year = date.split('.')
+                if (self.month == None or month.lstrip('0') == self.month) and \
+                        (self.year == None or year == self.year):
+
+                    data[-1][1].append((date, url))
+
+        return data
+
+    def parse_all(self, response):
+        name = response.xpath('//img[contains(@alt, "Details verbergen für")]').attrib['alt'].lstrip("Details verbergen für")
+        response.meta['name'] = name
+        for request in self.parse_page(response):
+            yield request
 
     def parse(self, response):
         """ Find the URL that opens the detailed view of all Gremien and form a request.
         Site: https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView """
 
         url = '/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView&ExpandView'
-        yield self.build_request(response.urljoin(url), self.parse_gremien, '')
+        yield self.build_request(response.urljoin(url), self.parse_all, '')
