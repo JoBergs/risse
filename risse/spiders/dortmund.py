@@ -16,11 +16,8 @@ class DortmundSpider(RisseSpider):
         links = response.xpath('//a[contains(@href, "pdf?OpenElement")]')
 
         for i in range(len(links)):
-            # request = scrapy.Request(response.urljoin(links[i].attrib['href']),
-            #     callback=self.save_pdf)
             request = self.build_request(response.urljoin(links[i].attrib['href']), self.save_pdf, 
                 os.path.join(response.meta['path'], links[i].attrib['href'].split('/')[-1].rstrip('?OpenElement')))
-            # request.meta['path'] = os.path.join(response.meta['path'], links[i].attrib['href'].split('/')[-1].rstrip('?OpenElement'))
 
             yield request
 
@@ -35,10 +32,8 @@ class DortmundSpider(RisseSpider):
             # e.g. <iframe src="https://dosys01.digistadtdo.de/dosys/gremrech.nsf/(embAttOrg)?OpenView&amp;RestrictToCategory=C1256F35004CEDB0C12582580023CA24" height="250" width="600" name="unterfenster" marginheight="0" marginwidth="0" frameborder="0">Alternativtext</iframe>
             iframe = response.xpath('//iframe').attrib["src"]
 
-            # request = scrapy.Request(iframe, callback=self.parse_iframe)
             request = self.build_request(iframe, self.parse_iframe, 
                 os.path.join(*response.meta['path'], response.meta['id']))
-            # request.meta['path'] = os.path.join(*response.meta['path'], response.meta['id'])
 
             yield request
         except:
@@ -48,8 +43,6 @@ class DortmundSpider(RisseSpider):
         """ Check if a Sitzung fits in the CLI data range. If so, store its HTML and
         generate requests for all Anlagen.
         Site: https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/034bc6e876399f96c1256e1d0035a1e9/c1256a150047cd47c1256b7a00291f6d?OpenDocument """
-
-        print('in parse niederschrift')
 
         # move this into base class
         name = self.mapping.get(response.meta['name'], response.meta['name'])
@@ -85,6 +78,10 @@ class DortmundSpider(RisseSpider):
         return requests
 
     def generate_niederschrift_requests(self, response, data):
+        """Build requests to scrape all Niederschriften found on a specific page
+        with extract_page_data.
+        Site: https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView&Start=1.29&ExpandView"""
+
         requests = []
 
         for niederschriften in data:
@@ -100,11 +97,16 @@ class DortmundSpider(RisseSpider):
         return requests
 
     def parse_page(self, response):
+        """ Function for parsing a single page of Niederschriften and then
+        opening the next page.
+        Site: https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView&Start=1.29&ExpandView"""
+
         data  = self.extract_page_data(response)
 
         for request in self.generate_niederschrift_requests(response, data):
             yield request
 
+        # e.g. <a href="/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView&amp;Start=1.58&amp;ExpandView"><b><font size="2" color="#000080" face="Arial">&gt;&gt;</font></b></a>
         next_page = response.xpath('//*[.=">>"]/parent::*/a') 
         if next_page is not None:
             request = self.build_request(response.urljoin(next_page.attrib['href']), 
@@ -114,8 +116,11 @@ class DortmundSpider(RisseSpider):
             yield request   
 
     def extract_page_data(self, response):
-        # format: (name,[(url, date), ...])
-        data = [(response.meta['name'], [])]
+        """ Function for extracting all niederschriften from a given page.
+        # The result is a list [(GremiumName, [(NiederschriftDatum, NiederschriftURL)])]
+        Site:  https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView&Start=1.29&ExpandView"""
+
+        data = [(response.meta['name'], [])]  # (name,[(url, date), ...])
         rows = response.xpath('//tr/td/font | //tr/td/a/img').getall()
 
         for row in rows:
@@ -135,6 +140,10 @@ class DortmundSpider(RisseSpider):
         return data
 
     def parse_all(self, response):
+        """ In order to start the scraping prozess, the name of the first Gremium
+        is required. This function extracts it and starts the page scraping. """
+
+        # e.g. <img src="/dosys/gremniedweb1.nsf/%24PlusMinus?OpenImageResource&amp;ImgIndex=1" border="0" alt="Details verbergen für Rat der Stadt">
         name = response.xpath('//img[contains(@alt, "Details verbergen für")]').attrib['alt'].lstrip("Details verbergen für")
         response.meta['name'] = name
         for request in self.parse_page(response):

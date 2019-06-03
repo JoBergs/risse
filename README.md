@@ -20,6 +20,7 @@ Scraper to scrape PDFs from german Ratsinformationssysteme (Risse).
 * ~~Dortmund Integrationsrat and many other are not being scraped!~~
 * Scrape Dortmund Archiv as well???
 * add DEBUG variable for only parsing a specific Gremium for testing purposes
+* more comments for dortmund
 
 ## Installation (Linux)
 Enter in the terminal
