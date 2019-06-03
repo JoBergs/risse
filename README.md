@@ -20,12 +20,11 @@ Scraper to scrape PDFs from german Ratsinformationssysteme (Risse).
 * ~~Dortmund Integrationsrat and many other are not being scraped!~~
 * Scrape Dortmund Archiv as well???
 * add DEBUG variable for only parsing a specific Gremium for testing purposes
-* more comments for dortmund
 
 ## Installation (Linux)
 Enter in the terminal
 ```
-sudo pip3 install scrapy git
+sudo pip3 install scrapy git pytest
 git clone https://github.com/JoBergs/risse.git
 ```
 
@@ -37,6 +36,9 @@ For Scrapy see
 
 For git see
 *https://www.jamessturtevant.com/posts/5-Ways-to-install-git-on-Windows/*
+
+For PyTest (optional) see
+*https://docs.pytest.org/en/latest/getting-started.html#installation-issues*
 
 Then, enter in the Terminal
 ```
@@ -81,4 +83,11 @@ Main page -> "Kalender" -> ASP requests for Sitzungen for fitting months -> Sitz
 
 ```
 scrapy crawl muelheim -a stadt=Mülheim -a url=https://ratsinfo.muelheim-ruhr.de/buerger/allris.net.asp -a root=test -a year=2018 -a month=3 -a overwrite=True
+```
+
+## Software tests
+
+To run the software tests, enter in the Scraper base directory ./risse
+```
+sudo py.test risse/tests
 ```
