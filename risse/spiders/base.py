@@ -10,6 +10,8 @@ from scrapy.utils.log import configure_logging
 class RisseSpider(scrapy.Spider):   
     ''' Abstract base class for scraping Ratsinformationssysteme. '''
 
+    name = "abstract"
+
     def __init__(self, root="documents", stadt=None, url=None, year=None,
                      month=None, overwrite="False", *a, **kw):
         ''' Initialization:
@@ -76,11 +78,14 @@ class RisseSpider(scrapy.Spider):
 
         return mapping
 
-    # TEST THIS
     def last_day_of_month(self, year, month):
         ''' Return the last day of the month, which is either "31.", "30.", "28." in february
         of "29." in a leap year february '''
+        
         last_day = "31."
+
+        if not month:  # if only the year is given, 31.(12.) is the last day
+            return last_day
 
         if int(month) % 2 == 0:
             last_day = "30."
@@ -92,8 +97,6 @@ class RisseSpider(scrapy.Spider):
 
         return last_day
 
-    # BROKEN! DOES NOT WORK FOR MONTH = None
-    # TEST THIS
     def get_dates(self, year, month):
         ''' Find the date range for the given year and month for parsing
         Sitzungen in  between. If only year is given, return 1.1.YEAR, 31.12.YEAR.
@@ -106,4 +109,4 @@ class RisseSpider(scrapy.Spider):
             if len(month) == 1:
                 month = '0' + month
             return "01." + month + "." + year, last_day + month + "." + year
-        return "01.01." + year, last_day + year
+        return "01.01." + year, last_day + '12.' + year

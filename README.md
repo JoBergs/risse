@@ -8,8 +8,8 @@ Scraper to scrape PDFs from german Ratsinformationssysteme (Risse).
 * ~~docstrings~~
 * ~~refactor general structure~~
 * ~~markup readme~~
-* software tests
-* fix schaltjahre
+* ~~(some)~~ software tests
+* ~~fix schaltjahre~~
 * improve logger
 * download validation
 * starter script (configuration file???)
@@ -20,6 +20,7 @@ Scraper to scrape PDFs from german Ratsinformationssysteme (Risse).
 * ~~Dortmund Integrationsrat and many other are not being scraped!~~
 * Scrape Dortmund Archiv as well???
 * add DEBUG variable for only parsing a specific Gremium for testing purposes
+* ~~BUG: only year as CLI parameter doesn't work~~
 
 ## Installation (Linux)
 Enter in the terminal
