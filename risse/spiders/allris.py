@@ -100,7 +100,7 @@ class AllrisSpider(RisseSpider):
         Site: https://ratsinfo.muelheim-ruhr.de/buerger/to010.asp?SILFDNR=11630"""
 
         # e.g. <a href="au020.asp?T1=Gremium&amp;history=switch&amp;tsDD=10&amp;tsMM=4&amp;tsYYYY=2018&amp;AULFDNR=25&amp;altoption=Gremium">Bezirksvertretung 3</a>
-        name = response.xpath('//a[contains(@href, "au020.asp")]/text()').get()
+        name = response.xpath('//a[contains(@href, "au020.asp") or contains(@href, "pa021.asp")]/text()').get()
 
         if not name:
             name = response.xpath('//tr[contains(@valign, "top")]/following-sibling::tr/td[contains(@class, "text1")]/text()').get()
