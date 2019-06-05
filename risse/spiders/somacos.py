@@ -5,8 +5,8 @@ from risse.spiders.base import *
 from lxml import html
 
 
-class BochumSpider(RisseSpider):
-    name = "bochum"
+class SomacosSpider(RisseSpider):
+    name = "somacos"
 
     def find_top_and_topic(self, index, trs):
         """ Since since a TOP can span multiple rows, it's necessary to search

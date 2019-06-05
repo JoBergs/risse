@@ -3,8 +3,8 @@
 from risse.spiders.base import *
 
 
-class MuelheimSpider(RisseSpider):
-    name = "muelheim"
+class AllrisSpider(RisseSpider):
+    name = "allris"
     all_years = range(1998, datetime.datetime.now().year + 1)
  
     def parse_vorlage(self, response): 

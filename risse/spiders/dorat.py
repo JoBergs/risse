@@ -5,8 +5,8 @@ from risse.spiders.base import *
 DATA = './data.txt'
 
 
-class DortmundSpider(RisseSpider):
-    name = "dortmund"
+class DoratSpider(RisseSpider):
+    name = "dorat"
 
     def parse_iframe(self, response):
         """ Parse the site for URLs to Anlagen and form requests for them.

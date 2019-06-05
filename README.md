@@ -23,9 +23,6 @@ Scraper to scrape PDFs from german Ratsinformationssysteme (Risse).
 * ~~BUG: only year as CLI parameter doesn't work~~
 
 ###Starter Script
-mülheim allris
-bochum somacos
-dortmund dorat
 
 Prio1days=14  # kommende 14 Tage
 prio1=daily
@@ -37,6 +34,9 @@ Prio3 gesamter Zeitraum einmal im Monat
 
 1 Ini for every City (with the parameters above)
 1 main Ini (decides which scraper will run amd where the results will be stored)
+
+Vorhergehende Monate sollen Schrittweise abgegrast werden
+
 
 ## Installation (Linux)
 Enter in the terminal
@@ -71,19 +71,18 @@ git pull origin master
 
 ## Usage
 
-Currently, three scrapers are implemented for the cities Dortmund, Bochum
-and Mühlheim.
+Currently, three scrapers are implemented for the RISSE allris(Mülheim), dorat (Dortmund) and somacos (Bochum).
 
 They are run with the command (executed in the risse base directory)
 ```
-scrapy crawl SPIDERNAME -a stadt=CITY -a url=URL -a root=RESULTPATH -a year=YEAR -a month=MONTH -a overwrite=BOOL
+scrapy crawl RISSENAME -a stadt=CITY -a url=URL -a root=RESULTPATH -a year=YEAR -a month=MONTH -a overwrite=BOOL
 ```
 
 ### Dortmund
 Scraper:
 Main Page -> extend all Gremien -> Gremium -> Sitzungen -> Sitzung (HTML), Anlagen
 ```
-scrapy crawl dortmund -a stadt=Dortmund -a url=https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView -a root=test -a year=2018 -a month=3 -a overwrite=True
+scrapy crawl dorat -a stadt=Dortmund -a url=https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView -a root=test -a year=2018 -a month=3 -a overwrite=True
 ```
 
 ### Bochum
@@ -91,7 +90,7 @@ Scraper:
 Main page -> "Gremien" -> GremiumName -> Sitzungen -> if date fits: scrape Einladung, Niederschrift,  Sitzung -> Scrape all Sitzung PDFs (with their topic and TOP)
 
 ```
-scrapy crawl bochum -a stadt=Bochum -a url=https://session.bochum.de/bi/infobi.asp -a root=test -a year=2018 -a month=3 -a overwrite=True
+scrapy crawl somacos -a stadt=Bochum -a url=https://session.bochum.de/bi/infobi.asp -a root=test -a year=2018 -a month=3 -a overwrite=True
 ```
 
 ### Mülheim
@@ -99,7 +98,7 @@ Scraper:
 Main page -> "Kalender" -> ASP requests for Sitzungen for fitting months -> Sitzung -> Niederschrift, Topics -> for each topic Beratungsverlauf, Anlagen, Vorlagen ->  all Anlagen for each Vorlage
 
 ```
-scrapy crawl muelheim -a stadt=Mülheim -a url=https://ratsinfo.muelheim-ruhr.de/buerger/allris.net.asp -a root=test -a year=2018 -a month=3 -a overwrite=True
+scrapy crawl allris -a stadt=Mülheim -a url=https://ratsinfo.muelheim-ruhr.de/buerger/allris.net.asp -a root=test -a year=2018 -a month=3 -a overwrite=True
 ```
 
 ## Software tests
