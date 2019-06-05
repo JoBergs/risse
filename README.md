@@ -22,6 +22,22 @@ Scraper to scrape PDFs from german Ratsinformationssysteme (Risse).
 * add DEBUG variable for only parsing a specific Gremium for testing purposes
 * ~~BUG: only year as CLI parameter doesn't work~~
 
+###Starter Script
+mülheim allris
+bochum somacos
+dortmund dorat
+
+Prio1days=14  # kommende 14 Tage
+prio1=daily
+prio1exeptionday=1,7
+prio2=weekly
+prio2day=1
+Prio2days=365  # vergangene Tage (consider leap years)
+Prio3 gesamter Zeitraum einmal im Monat
+
+1 Ini for every City (with the parameters above)
+1 main Ini (decides which scraper will run amd where the results will be stored)
+
 ## Installation (Linux)
 Enter in the terminal
 ```
@@ -92,3 +108,4 @@ To run the software tests, enter in the Scraper base directory ./risse
 ```
 sudo py.test risse/tests
 ```
+(Pass -s for running ipdb in tests.)

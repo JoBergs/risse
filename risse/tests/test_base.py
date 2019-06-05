@@ -16,6 +16,10 @@ class BaseClassTestCase(TestCase):
         self.base = RisseSpider("testpath", "Dortmund", None, None, None, "False")
         assert self.base.get_dates("2011", "4") == ('01.04.2011', '30.04.2011')
 
+    def test_find_date_range_september(self):
+        self.base = RisseSpider("testpath", "Dortmund", None, None, None, "False")
+        assert self.base.get_dates("2011", "9") == ('01.09.2011', '30.09.2011')
+
     def test_find_date_range_february(self):
         self.base = RisseSpider("testpath", "Dortmund", None, None, None, "False")
         assert self.base.get_dates("2011", "2") == ('01.02.2011', '28.02.2011')

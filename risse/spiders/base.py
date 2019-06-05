@@ -78,35 +78,16 @@ class RisseSpider(scrapy.Spider):
 
         return mapping
 
-    def last_day_of_month(self, year, month):
-        ''' Return the last day of the month, which is either "31.", "30.", "28." in february
-        of "29." in a leap year february '''
-        
-        last_day = "31."
-
-        if not month:  # if only the year is given, 31.(12.) is the last day
-            return last_day
-
-        if int(month) % 2 == 0:
-            last_day = "30."
-
-        if int(month) == 2:
-            last_day = "28."
-            if calendar.isleap(int(year)):
-                last_day = "29."
-
-        return last_day
-
     def get_dates(self, year, month):
         ''' Find the date range for the given year and month for parsing
         Sitzungen in  between. If only year is given, return 1.1.YEAR, 31.12.YEAR.
         If additionally a month is given, return 1.MONTH.YEAR, LAST_DAY.MONTH.YEAR.'''
 
-        last_day = self.last_day_of_month(year, month)
+        if not month:
+            return "01.01." + year, '31.12.' + year
+        else:
+            last_day = str(calendar.monthrange(int(year), int(month))[1]).zfill(2)
+            month = month.zfill(2)
 
-        if month:
-            tmp = month
-            if len(month) == 1:
-                month = '0' + month
-            return "01." + month + "." + year, last_day + month + "." + year
-        return "01.01." + year, last_day + '12.' + year
+            return "01." + month + "." + year, last_day + '.' + month + "." + year
+            
