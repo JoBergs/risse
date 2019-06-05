@@ -101,12 +101,17 @@ class MuelheimSpider(RisseSpider):
 
         # e.g. <a href="au020.asp?T1=Gremium&amp;history=switch&amp;tsDD=10&amp;tsMM=4&amp;tsYYYY=2018&amp;AULFDNR=25&amp;altoption=Gremium">Bezirksvertretung 3</a>
         name = response.xpath('//a[contains(@href, "au020.asp")]/text()').get()
+
+        if not name:
+            name = response.xpath('//tr[contains(@valign, "top")]/following-sibling::tr/td[contains(@class, "text1")]/text()').get()
+
         if name in self.mapping:
             name = self.mapping[name]
 
         # e.g. <a href="si010_j.asp?YY=2018&amp;MM=03&amp;DD=05" title="Sitzungskalender 03/2018 anzeigen">05.03.2018</a>
         date = response.xpath('//a[contains(@title, "Sitzungskalender")]/text()').get().split('.')
         path = [self.root, date[-1], name, '-'.join(date[::-1]), '__Dokumente']
+
         self.create_directories(os.path.join(*path))
 
         yield self.build_niederschrift_requests(response, path)
