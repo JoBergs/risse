@@ -66,7 +66,7 @@ class SomacosSpider(RisseSpider):
     def parse_gremium(self, response):
         """ Function to scrape all Sitzungen of a Gremium. Validates that the Sitzung
         fits the CLI parameters and scrapes Einladung, Niederschrift and Auschuss.
-        Site:https://session.bochum.de/bi/si0041.asp?__ctopic=gr&__kgrnr=103973 """
+        Site:https://session.bochum.de/bi/si0041.asp?__cwpall=1&__ctopic=gr&__kgrnr=977997 """
 
         urls, dates, niederschriften, einladungen = self.get_gremium_data(response)
 
@@ -140,7 +140,8 @@ class SomacosSpider(RisseSpider):
         names = [self.mapping[name] if name in self.mapping else name for name in names]
 
         for i in range(len(urls)):
-                request = self.build_request(response.urljoin(urls[i]), self.parse_gremium, '')
+                all_data_url = urls[i].replace('__ctopic', '__cwpall=1&__ctopic')
+                request = self.build_request(response.urljoin(all_data_url), self.parse_gremium, '')
                 request.meta['name'] = names[i]
 
                 yield request   
