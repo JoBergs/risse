@@ -100,7 +100,7 @@ class AllrisSpider(RisseSpider):
         Site: https://ratsinfo.muelheim-ruhr.de/buerger/to010.asp?SILFDNR=11630"""
 
         # e.g. <a href="au020.asp?T1=Gremium&amp;history=switch&amp;tsDD=10&amp;tsMM=4&amp;tsYYYY=2018&amp;AULFDNR=25&amp;altoption=Gremium">Bezirksvertretung 3</a>
-        name = response.xpath('//a[contains(@href, "au020.asp") or contains(@href, "pa021.asp")]/text()').get()
+        name = response.xpath('//a[contains(@href, "au020.asp") or contains(@href, "pa021.asp")]/text()').getall()[-1]
 
         if not name:
             name = response.xpath('//tr[contains(@valign, "top")]/following-sibling::tr/td[contains(@class, "text1")]/text()').get()
@@ -167,11 +167,15 @@ class AllrisSpider(RisseSpider):
         All IDs of Sitzungen are extracted and .asp form request for each ID are executed. 
         Site: https://ratsinfo.muelheim-ruhr.de/buerger/si010_j.asp'''
 
+        # e.g. <a href="to010.asp?SILFDNR=11630">Sitzung der Bezirksvertretung 3</a>
+        ids = response.xpath('//a').re(r'"*to010.asp\?SILFDNR=(\S*)"')
+        # ids = response.xpath('//a[contains(@href, "nqproxy")]')
+
+
         # import ipdb
         # ipdb.set_trace()
 
-        # e.g. <a href="to010.asp?SILFDNR=11630">Sitzung der Bezirksvertretung 3</a>
-        ids = response.xpath('//a').re(r'"*to010.asp\?SILFDNR=(\S*)"')
+        print(ids)
 
         for current in ids:
             request = self.build_request(response.urljoin('to010.asp'),
@@ -200,5 +204,9 @@ class AllrisSpider(RisseSpider):
         main page and form a request.
         Site: https://ratsinfo.muelheim-ruhr.de/buerger/allris.net.asp """
 
-        url = response.xpath('//a[contains(@href, "si010_j.asp")]/@href').get()
+        url = response.xpath('//a[contains(@href, "si010_j.asp") or contains(@href, "si010.asp") or contains(@href, "si010_a.asp")]/@href').get()
+        # import ipdb
+        # ipdb.set_trace()
+        # Hagen is accessed like this:
+        #   https://www.hagen.de/ngproxy/a6b28fc3a138dc73acd88f99d00e74fdfb845dc2
         yield self.build_request(response.urljoin(url), self.parse_calender, '')  
