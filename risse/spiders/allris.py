@@ -167,8 +167,11 @@ class AllrisSpider(RisseSpider):
         All IDs of Sitzungen are extracted and .asp form request for each ID are executed. 
         Site: https://ratsinfo.muelheim-ruhr.de/buerger/si010_j.asp'''
 
+        # import ipdb
+        # ipdb.set_trace()
+
         # e.g. <a href="to010.asp?SILFDNR=11630">Sitzung der Bezirksvertretung 3</a>
-        ids = response.xpath('//a').re(r'"to010.asp\?SILFDNR=(\S*)"')
+        ids = response.xpath('//a').re(r'"*to010.asp\?SILFDNR=(\S*)"')
 
         for current in ids:
             request = self.build_request(response.urljoin('to010.asp'),

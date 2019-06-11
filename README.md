@@ -105,7 +105,22 @@ scrapy crawl allris -a stadt=Mülheim -a url=https://ratsinfo.muelheim-ruhr.de/b
 
 #### Herne
 ```
-scrapy crawl allris -a stadt=Herne -a url=https://www.herne.de/pi/si010_j.asp -a root=test -a year=2018 -a month=3 -a overwrite=True
+scrapy crawl allris -a stadt=Herne -a url=https://www.herne.de/Rathaus/Politik/Ratsinformationssystem/ -a root=test -a year=2018 -a month=3 -a overwrite=True
+```
+
+#### Oberhausen
+```
+scrapy crawl allris -a stadt=Oberhausen -a url=https://allris.oberhausen.de/bi/allris.net.asp -a root=test -a year=2018 -a month=3 -a overwrite=True
+```
+
+#### Selm
+```
+scrapy crawl allris -a stadt=Selm -a url=https://www.sitzungsdienst-selm.de/bi/allris.net.asp -a root=test -a year=2018 -a month=3 -a overwrite=True
+```
+
+#### Hagen
+```
+scrapy crawl allris -a stadt=Hagen -a url=https://www.hagen.de/irj/portal/AllrisB -a root=test -a year=2018 -a month=3 -a overwrite=True
 ```
 
 
