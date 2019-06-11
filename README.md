@@ -78,14 +78,14 @@ They are run with the command (executed in the risse base directory)
 scrapy crawl RISSENAME -a stadt=CITY -a url=URL -a root=RESULTPATH -a year=YEAR -a month=MONTH -a overwrite=BOOL
 ```
 
-### Dortmund
+### dorat
 Scraper:
 Main Page -> extend all Gremien -> Gremium -> Sitzungen -> Sitzung (HTML), Anlagen
 ```
 scrapy crawl dorat -a stadt=Dortmund -a url=https://dosys01.digistadtdo.de/dosys/gremniedweb1.nsf/NiederschriftenWeb?OpenView -a root=test -a year=2018 -a month=3 -a overwrite=True
 ```
 
-### Bochum
+### somacos
 Scraper:
 Main page -> "Gremien" -> GremiumName -> Sitzungen -> if date fits: scrape Einladung, Niederschrift,  Sitzung -> Scrape all Sitzung PDFs (with their topic and TOP)
 
@@ -93,13 +93,22 @@ Main page -> "Gremien" -> GremiumName -> Sitzungen -> if date fits: scrape Einla
 scrapy crawl somacos -a stadt=Bochum -a url=https://session.bochum.de/bi/infobi.asp -a root=test -a year=2018 -a month=3 -a overwrite=True
 ```
 
-### Mülheim
+### allris
+
 Scraper:
 Main page -> "Kalender" -> ASP requests for Sitzungen for fitting months -> Sitzung -> Niederschrift, Topics -> for each topic Beratungsverlauf, Anlagen, Vorlagen ->  all Anlagen for each Vorlage
 
+#### Muelheim
 ```
 scrapy crawl allris -a stadt=Mülheim -a url=https://ratsinfo.muelheim-ruhr.de/buerger/allris.net.asp -a root=test -a year=2018 -a month=3 -a overwrite=True
 ```
+
+#### Herne
+```
+scrapy crawl allris -a stadt=Herne -a url=https://www.herne.de/pi/si010_j.asp -a root=test -a year=2018 -a month=3 -a overwrite=True
+```
+
+
 
 ## Software tests
 
