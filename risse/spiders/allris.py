@@ -8,7 +8,7 @@ class AllrisSpider(RisseSpider):
     all_years = range(1998, datetime.datetime.now().year + 1)
  
     def parse_vorlage(self, response): 
-        """ Herein, all Anlagen or a Vorlage are extracted. 
+        """ Herein, all Anlagen of a Vorlage are extracted. 
         Site: https://ratsinfo.muelheim-ruhr.de/buerger/vo020.asp?VOLFDNR=20431"""
 
         # e.g. <input type="hidden" name="DOLFDNR" value="563803">
@@ -99,18 +99,13 @@ class AllrisSpider(RisseSpider):
         scraped. The required requests are build herein. 
         Site: https://ratsinfo.muelheim-ruhr.de/buerger/to010.asp?SILFDNR=11630"""
 
-        
+        # print(response.request.headers)
+
         # e.g. <td class="kb1">Gremien:</td><td class="text1" colspan="3">Ausländerbeirat, Migrationsrat</td>    
         name = response.xpath('//td[contains(text(), "Gremien") or contains(text(), "Gremium")]/following-sibling::td/text()').get()  
 
-        import ipdb
-        ipdb.set_trace()
-        # if not name:
-        #     name = response.xpath('//tr[contains(@valign, "top")]/following-sibling::tr/td[contains(@class, "text1")]/text()').get()
-
         if not name:
-            # e.g. <a href="au020.asp?T1=Gremium&amp;history=switch&amp;tsDD=10&amp;tsMM=4&amp;tsYYYY=2018&amp;AULFDNR=25&amp;altoption=Gremium">Bezirksvertretung 3</a>
-            name = response.xpath('//a[contains(@href, "au020.asp") or contains(@href, "pa021.asp")]/text()').getall()[-1]
+            name = response.xpath('//td[contains(text(), "Gremien") or contains(text(), "Gremium")]/following-sibling::td/a/text()').get()
 
         if name in self.mapping:
             name = self.mapping[name]
