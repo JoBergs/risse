@@ -21,6 +21,8 @@ Scraper to scrape PDFs from german Ratsinformationssysteme (Risse).
 * Scrape Dortmund Archiv as well???
 * add DEBUG variable for only parsing a specific Gremium for testing purposes
 * ~~BUG: only year as CLI parameter doesn't work~~
+* cloud-upload should split joined Gremien ("Gremium1, Gremium2")
+    and upload the content to both Gremien
 
 ###Starter Script
 

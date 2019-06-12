@@ -99,11 +99,16 @@ class AllrisSpider(RisseSpider):
         scraped. The required requests are build herein. 
         Site: https://ratsinfo.muelheim-ruhr.de/buerger/to010.asp?SILFDNR=11630"""
 
-        # e.g. <a href="au020.asp?T1=Gremium&amp;history=switch&amp;tsDD=10&amp;tsMM=4&amp;tsYYYY=2018&amp;AULFDNR=25&amp;altoption=Gremium">Bezirksvertretung 3</a>
-        name = response.xpath('//a[contains(@href, "au020.asp") or contains(@href, "pa021.asp")]/text()').getall()[-1]
+        
+        # e.g. <td class="kb1">Gremien:</td><td class="text1" colspan="3">Ausländerbeirat, Migrationsrat</td>    
+        name = response.xpath('//td[contains(text(), "Gremien")]/following-sibling::td/text()').get()  
 
         if not name:
             name = response.xpath('//tr[contains(@valign, "top")]/following-sibling::tr/td[contains(@class, "text1")]/text()').get()
+
+        if not name:
+            # e.g. <a href="au020.asp?T1=Gremium&amp;history=switch&amp;tsDD=10&amp;tsMM=4&amp;tsYYYY=2018&amp;AULFDNR=25&amp;altoption=Gremium">Bezirksvertretung 3</a>
+            name = response.xpath('//a[contains(@href, "au020.asp") or contains(@href, "pa021.asp")]/text()').getall()[-1]
 
         if name in self.mapping:
             name = self.mapping[name]
@@ -169,11 +174,6 @@ class AllrisSpider(RisseSpider):
 
         # e.g. <a href="to010.asp?SILFDNR=11630">Sitzung der Bezirksvertretung 3</a>
         ids = response.xpath('//a').re(r'"*to010.asp\?SILFDNR=(\S*)"')
-        # ids = response.xpath('//a[contains(@href, "nqproxy")]')
-
-
-        # import ipdb
-        # ipdb.set_trace()
 
         print(ids)
 
