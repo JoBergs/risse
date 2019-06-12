@@ -103,6 +103,8 @@ class AllrisSpider(RisseSpider):
         # e.g. <td class="kb1">Gremien:</td><td class="text1" colspan="3">Ausländerbeirat, Migrationsrat</td>    
         name = response.xpath('//td[contains(text(), "Gremien") or contains(text(), "Gremium")]/following-sibling::td/text()').get()  
 
+        import ipdb
+        ipdb.set_trace()
         # if not name:
         #     name = response.xpath('//tr[contains(@valign, "top")]/following-sibling::tr/td[contains(@class, "text1")]/text()').get()
 
