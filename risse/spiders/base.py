@@ -26,7 +26,10 @@ class RisseSpider(scrapy.Spider):
         self.root, self.year, self.month, self.stadt = root, year, month, stadt
         self.overwrite, self.start_urls = bool(overwrite), [url]
 
-        log_name = self.stadt + str(datetime.datetime.now().timestamp()).split('.')[0] + '.log'
+        now = datetime.datetime.now()
+        timestamp = '-'.join([str(now.year), str(now.month), str(now.day), str(now.hour), str(now.minute), str(now.second)])
+
+        log_name = self.stadt + datetime.datetime.now().ctime().replace(' ', '_') + '.log'
         configure_logging({"LOG_FILE": log_name})
 
         # read in Gremium mappings to abbreviations
