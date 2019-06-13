@@ -37,6 +37,7 @@ class AllrisSpider(RisseSpider):
         requests = []
 
         for anlage in anlagen:
+            # print('anlage', response.urljoin(anlage))
             request = self.build_request(response.urljoin(anlage), self.save_pdf,
                 os.path.join(response.meta['path'], os.path.basename(anlage)))
 
@@ -64,7 +65,6 @@ class AllrisSpider(RisseSpider):
         Vorlage and Anlagen has to be parsed. 
         Site: https://ratsinfo.muelheim-ruhr.de/buerger/to020.asp?TOLFDNR=89835"""
 
-        # current_path = response.meta['path'].replace('/', '-').replace('\\', '-')
         self.create_directories(response.meta['path'])
 
         self.parse_beratungsverlauf(response)
@@ -100,8 +100,6 @@ class AllrisSpider(RisseSpider):
         scraped. The required requests are build herein. 
         Site: https://ratsinfo.muelheim-ruhr.de/buerger/to010.asp?SILFDNR=11630"""
 
-        # print(response.request.headers)
-
         # e.g. <td class="kb1">Gremien:</td><td class="text1" colspan="3">Ausländerbeirat, Migrationsrat</td>    
         name = response.xpath('//td[contains(text(), "Gremien") or contains(text(), "Gremium")]/following-sibling::td/text()').get()  
 
@@ -110,6 +108,8 @@ class AllrisSpider(RisseSpider):
 
         if name in self.mapping:
             name = self.mapping[name]
+
+        # print("parsing ", name)
 
         # e.g. <a href="si010_j.asp?YY=2018&amp;MM=03&amp;DD=05" title="Sitzungskalender 03/2018 anzeigen">05.03.2018</a>
         date = response.xpath('//a[contains(@title, "Sitzungskalender")]/text()').get().split('.')
@@ -149,6 +149,8 @@ class AllrisSpider(RisseSpider):
         # e.g. <a href="vo020.asp?VOLFDNR=20417">V 18/0111-01</a>
         topics = response.xpath('//a[contains(@href, "vo020.asp")]/text()').getall()
 
+        # print("topics ", topics)
+
         for i in range(len(urls)):          
             # this fixes an error in the HTML layout: the TOP might be in a <span> or not
             try:
@@ -175,7 +177,7 @@ class AllrisSpider(RisseSpider):
         # e.g. <a href="to010.asp?SILFDNR=11630">Sitzung der Bezirksvertretung 3</a>
         ids = response.xpath('//a').re(r'"*to010.asp\?SILFDNR=(\S*)"')
 
-        print(ids)
+        # print('ids', ids)
 
         for current in ids:
             request = self.build_request(response.urljoin('to010.asp'),
