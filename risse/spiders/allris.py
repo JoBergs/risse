@@ -64,6 +64,7 @@ class AllrisSpider(RisseSpider):
         Vorlage and Anlagen has to be parsed. 
         Site: https://ratsinfo.muelheim-ruhr.de/buerger/to020.asp?TOLFDNR=89835"""
 
+        # current_path = response.meta['path'].replace('/', '-').replace('\\', '-')
         self.create_directories(response.meta['path'])
 
         self.parse_beratungsverlauf(response)
@@ -156,8 +157,10 @@ class AllrisSpider(RisseSpider):
             except: 
                 top = response.xpath('//a[contains(@href, "' + urls[i] + '")]/parent::*/parent::*/td[contains(@class, "text4")]/span/a/text()').get().strip('Ö\xa0') .lstrip('0')     
 
+            current_topic = topics[i].replace('/', '-').replace('\\', '-')
+
             request = self.build_request(response.urljoin(urls[i]),
-                self.parse_beschluss, os.path.join(*path[:-1], top or "kein_TOP", topics[i]),
+                self.parse_beschluss, os.path.join(*path[:-1], top or "kein_TOP", current_topic),
                 {'TOLFDNR': urls[i].strip('to020.asp?TOLFDNR=')})
 
             requests.append(request)
